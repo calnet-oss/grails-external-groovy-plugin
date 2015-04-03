@@ -206,7 +206,7 @@ removing the thread launch altogether, or at a minimum, ensuring the thread
 will exit in a reasonable amount of time.
 
 Threads aren't the only possible culprit.  You may find that a JDK or Grails
-class is holding a static reference.  Possibly a cache in the class's static
+class is holding a static reference; possibly a cache in the class's static
 memory that's caching an object or class from your script because your
 script used that class, directy or indirectly, which in turn did you the
 disservice of invisibly caching something you didn't want cached.  In these
