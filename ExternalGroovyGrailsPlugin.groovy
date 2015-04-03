@@ -1,3 +1,5 @@
+import edu.berkeley.groovy.ScriptRunnerImpl
+
 class ExternalGroovyGrailsPlugin {
     def group = "edu.berkeley.calnet.plugins"
 
@@ -7,9 +9,9 @@ class ExternalGroovyGrailsPlugin {
     def grailsVersion = "2.4 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
-        "grails-app/domain/**",
-        "grails-app/controllers/**"
+            "grails-app/views/error.gsp",
+            "grails-app/domain/**",
+            "grails-app/controllers/**"
     ]
 
     // TODO Fill in these fields
@@ -45,7 +47,7 @@ Execute external Groovy scripts from Grails.
     }
 
     def doWithSpring = {
-        // TODO Implement runtime spring config (optional)
+        scriptRunner(ScriptRunnerImpl, application.config?.externalGroovy?.defaultScriptDirectory)
     }
 
     def doWithDynamicMethods = { ctx ->
