@@ -102,7 +102,8 @@ Advice:
    expect that will prevent the script class loader becoming available for
    garbage collection.  Or, they launch threads.  If this starts happening,
    there's really no other way to hunt down the problem other than by the
-   technique described in the "Debugging Unloading Issues" section below.
+   technique described in the "Debugging Class Unloading Issues" section
+   below.
 
 ## Debugging Class Unloading Issues
 
