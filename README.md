@@ -109,7 +109,7 @@ Advice:
 
 In Java 7 and earlier, classes are loaded into "PermGen" space.  (Java 8 got
 rid of this separate "PermGen" space.  See
-[http://www.infoq.com/articles/Java-PERMGEN-Removed](Where Has the Java PermGen Gone?).
+[Where Has the Java PermGen Gone?](http://www.infoq.com/articles/Java-PERMGEN-Removed).
 
 If you are using this plugin, modify external scripts a lot, and see
 OutOfMemory PermGen exceptions thrown after running for awhile, then the
