@@ -171,15 +171,15 @@ Go to http://localhost:7000/
 
 Find the link for `class edu.berkeley.groovy.ScriptClassLoader`.
 
-On that page, under the *Instances* heading, click the `Include subclasses`
-link.
+On that page, under the **Instances** heading, click the `Include
+subclasses` link.
 
 Choose one of the `edu.berkeley.groovy.ScriptClassLoader` instances that you
 know should not be hanging around anymore (if you see none, perhaps you have
 a memory problem unrelated to this plugin).
 
-You're now on the page for an instance of ScriptClassLoader.  Towards the
-bottom, under the *Other Queries* heading, and under the "Reference Chains
+You're now on the page for an instance of `ScriptClassLoader`.  Towards the
+bottom, under the **Other Queries** heading, and under the "Reference Chains
 from Rootset" line, click on the `Exclude weak refs` link.
 
 You'll probably see multiple references from root objects, but when I ran this test, the first reference looked like this:
