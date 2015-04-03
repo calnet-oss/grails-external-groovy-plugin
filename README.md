@@ -118,7 +118,7 @@ class hello {
 
 For scripts where you don't explicitly define the script class, the last
 statement executed is the value returned by `runScript()` (again, after
-toString() is run on the resulting value).
+`toString()` is run on the resulting value).
 
 Example:
 `hello.groovy`:
@@ -128,14 +128,14 @@ Example:
 
 ### Property injection
 
-The implementation of ScriptRunner will inject the `grailsApplication`
+The implementation of `ScriptRunner` will inject the `grailsApplication`
 property into the script, assuming that you are using an injected
 scriptRunner instance created by Spring.
 
 ### ScriptLoaderImpl 
 
 If you want more ScriptLoaders other than the default, you can add as many
-ScriptLoader beans as you want via resources.groovy.  You'll probably also
+ScriptLoader beans as you want via `resources.groovy`.  You'll probably also
 want to add the script directories for these loaders in the `externalGroovy`
 section in your `Config.groovy` file.
 
