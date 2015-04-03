@@ -43,7 +43,7 @@ the script's class loader.  You can put other classes in this directory too,
 as you normally could with Groovy.
 
 As an example, you put two files in your `external-scripts` directory:
-`hello.groovy' and `Friend.groovy'.  `hello.groovy' will be the script you
+`hello.groovy` and `Friend.groovy`.  `hello.groovy` will be the script you
 launch, and `Friend.groovy` will contain a `Friend` class.
 
 hello.groovy:
