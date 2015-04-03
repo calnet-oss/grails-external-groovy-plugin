@@ -28,14 +28,14 @@ externalGroovy {
 Create a script in your `external-scripts` directory, such as
 `external-scripts/hello.groovy`.
 
-hello.groovy:
+`hello.groovy`:
 ```
 println("hello world")
 ```
 
-To run this script from your application:
+### To run this script from your application
 
-Add an import:
+Add an import to your application code:
 ```
 import edu.berkeley.groovy.ScriptRunner
 ```
@@ -63,12 +63,12 @@ As an example, you could put two files in your `external-scripts` directory:
 `hello.groovy` and `Friend.groovy`.  `hello.groovy` will be the script you
 launch, and `Friend.groovy` will contain a `Friend` class.
 
-hello.groovy:
+`hello.groovy`:
 ```
 println(new Friend().toString())
 ```
 
-Friend.groovy:
+`Friend.groovy`:
 ```
 class Friend {
   @Override
@@ -90,7 +90,7 @@ name should match the script filename (without the `.groovy` suffix).  This
 class needs to implement a `run()` method.
 
 Example:
-hello.groovy:
+`hello.groovy`:
 ```
 class hello {
   void run() {
@@ -99,14 +99,15 @@ class hello {
 }
 ```
 
-The run() method can also return an Object that ScriptRunner.runScript()
-will return as a String (by calling the `toString()` method on the result). 
-The reason why runScript() returns toString() of the Object is because
-otherwise references may be held to a class loaded by the script's class
-loader that prevents garbage collection.
+The `run()` method can also return an `Object` that
+`ScriptRunner.runScript()` will return as a `String` (by calling the
+`toString()` method on the result).  The reason why `runScript()` returns
+`toString()` of the `Object` is because otherwise references may be held to
+a class loaded by the script's class loader that prevents garbage
+collection.
 
 Example:
-hello.groovy:
+`hello.groovy`:
 ```
 class hello {
   Object run() {
@@ -120,7 +121,7 @@ statement executed is the value returned by `runScript()` (again, after
 toString() is run on the resulting value).
 
 Example:
-hello.groovy:
+`hello.groovy`:
 ```
 (2+2) // runScript() will return (2+2).toString(), so the string "4"
 ```
@@ -140,7 +141,7 @@ section in your `Config.groovy` file.
 
 Example of adding two more scriptRunners:
 
-Config.groovy:
+`Config.groovy`:
 ```
 externalGroovy {
     defaultScriptDirectory = "external-scripts/default"
@@ -152,7 +153,7 @@ externalGroovy {
 Note your script directories can be absolute paths instead of relative to
 your grails application directory.
 
-resources.groovy:
+`resources.groovy`:
 ```
 import edu.berkeley.groovy.ScriptRunnerImpl
 ```
@@ -161,10 +162,10 @@ scriptRunner2(ScriptRunnerImpl, application.config?.externalGroovy?.scriptDirect
 scriptRunner3(ScriptRunnerImpl, application.config?.externalGroovy?.scriptDirectory3)
 ```
 
-There a few other other parameters you can pass to a ScriptRunnerImpl
+There a few other other parameters you can pass to a `ScriptRunnerImpl`
 constructor.
 
-In resources.groovy, you can instantiate a bean using all the options using
+In `resources.groovy`, you can instantiate a bean using all the options using
 the map constructor:
 ```
 scriptRunner4(ScriptRunnerImpl, [
@@ -174,7 +175,7 @@ scriptRunner4(ScriptRunnerImpl, [
 ])
 ```
 
-In addition to scriptDirectory, there is:
+In addition to `scriptDirectory`, there is:
 
  * `bootstrapScriptFile` - If you want to override the default bootstrap
    code, you can provide the path to your own Bootstrap.groovy file.
@@ -186,13 +187,13 @@ In addition to scriptDirectory, there is:
    scripts will only be able to load classes from the JVM's system class
    loader and from classes in scripts in your scriptDirectory.
 
-If you want to prevent injecting grailsApplication into the scripts, then
-after you instantiate your ScriptRunner, you can do:
+If you want to prevent injecting `grailsApplication` into the scripts, then
+after you instantiate your `ScriptRunner`, you can do:
 ```
 scriptRunner.grailsApplication = null
 ````
 
-You can also set the parentClassLoader after instantiation.
+You can also set the `parentClassLoader` after instantiation.
 
 ---
 
