@@ -68,8 +68,51 @@ wanted the `Friend` class to be placed in the `myexample` package, you'd do
 the same as in the above example, but add `package myexample` at the top of
 `Friend.groovy` and move it to the `external-scripts/myexample` directory.
 
-The rest of this page you only need to read if you're running into class
-unloading issues.
+You can also execute scripts that explicitly define its class.  The class
+name should match the script filename (without the `.groovy` suffix, of
+course).  This class needs to implement a `run()` method.
+
+Example:
+hello.groovy:
+```
+class hello {
+  void run() {
+    println("hello world")
+  }
+}
+```
+
+The run() method can also return an Object that ScriptRunner.runScript()
+will return as a String (by calling the `toString()` method on the result). 
+The reason why runScript() returns toString() of the Object is because
+otherwise references may be held to a class loaded by the script's class
+loader that prevents garbage collection.
+
+Example:
+hello.groovy:
+```
+class hello {
+  Object run() {
+    return (2+2) // runScript() will return (2+2).toString(), so the string "4"
+  }
+}
+```
+
+For scripts where you don't explicitly define the script class, the last
+statement executed is the value returned by `runScript()` (again, after
+toString() is run on the resulting value).
+
+Example:
+hello.groovy:
+```
+(2+2) // runScript() will return (2+2).toString(), so the string "4"
+```
+---
+
+**The rest of this page you only need to read if you're running into class
+unloading issues.**
+
+---
 
 ## Class Unloading
 
