@@ -80,7 +80,7 @@ instances loaded by the script's class loader.  This should be the case for
 "simple scripts" that execute and exit, but if the script utilizes certain
 classes and objects within the parent class loader scope, then one or more
 of those classes or objects may gain and hold a reference to a class or
-object with the script's class loader scope.  The same can be said if the
+object within the script's class loader scope.  The same can be said if the
 script launches threads that don't exit.
 
 Advice:
