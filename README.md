@@ -68,6 +68,9 @@ wanted the `Friend` class to be placed in the `myexample` package, you'd do
 the same as in the above example, but add `package myexample` at the top of
 `Friend.groovy` and move it to the `external-scripts/myexample` directory.
 
+The rest of this page you only need to read if you're running into class
+unloading issues.
+
 ## Class Unloading
 
 Class unloading can be tricky business due to the inherent nature of object
