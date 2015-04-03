@@ -17,6 +17,14 @@ cd <your grails application root directory>
 mkdir external-scripts
 ```
 
+In `grails-app/conf/Config.groovy`, set the default script directory for
+your external scripts:
+```
+externalGroovy {
+    defaultScriptDirectory = "external-scripts"
+}
+```
+
 Create a script in your `external-scripts` directory, such as
 `external-scripts/hello.groovy`.
 
@@ -26,23 +34,32 @@ println("hello world")
 ```
 
 To run this script from your application:
+
+Add an import:
 ```
-import edu.berkeley.groovy.ScriptRunnerImpl
+import edu.berkeley.groovy.ScriptRunner
 ```
+
+The plugin will inject a `scriptRunner` instance for you, so declare a
+property:
 ```
-ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File("external-scripts"))
+ScriptRunner scriptRunner // injected by Spring
+```
+
+In your application code, run your `external-scripts/hello.groovy` script.
+```
 scriptRunner.runScript("hello") // remove .groovy file suffix
 ```
 
 That should output "hello world" to your console.
 
-Notice that when you run a script, you pass the script name without the
-`.groovy` suffix.  You're actually passing the script's class name to
-`runScript()` and the `external-scripts` directory is the classpath root for
-the script's class loader.  You can put other classes in this directory too,
-as you normally could with Groovy.
+When you run a script, you pass the script name without the `.groovy`
+suffix.  You're actually passing the script's class name to `runScript()`
+and the `external-scripts` directory is the classpath root for the script's
+class loader.  You can put other classes in this directory too, as you
+normally could with Groovy.
 
-As an example, you put two files in your `external-scripts` directory:
+As an example, you could put two files in your `external-scripts` directory:
 `hello.groovy` and `Friend.groovy`.  `hello.groovy` will be the script you
 launch, and `Friend.groovy` will contain a `Friend` class.
 
@@ -69,8 +86,8 @@ the same as in the above example, but add `package myexample` at the top of
 `Friend.groovy` and move it to the `external-scripts/myexample` directory.
 
 You can also execute scripts that explicitly define its class.  The class
-name should match the script filename (without the `.groovy` suffix, of
-course).  This class needs to implement a `run()` method.
+name should match the script filename (without the `.groovy` suffix).  This
+class needs to implement a `run()` method.
 
 Example:
 hello.groovy:
@@ -107,6 +124,76 @@ hello.groovy:
 ```
 (2+2) // runScript() will return (2+2).toString(), so the string "4"
 ```
+
+### Property injection
+
+The implementation of ScriptRunner will inject the `grailsApplication`
+property into the script, assuming that you are using an injected
+scriptRunner instance created by Spring.
+
+### ScriptLoaderImpl 
+
+If you want more ScriptLoaders other than the default, you can add as many
+ScriptLoader beans as you want via resources.groovy.  You'll probably also
+want to add the script directories for these loaders in the `externalGroovy`
+section in your `Config.groovy` file.
+
+Example of adding two more scriptRunners:
+
+Config.groovy:
+```
+externalGroovy {
+    defaultScriptDirectory = "external-scripts/default"
+    scriptDirectory2 = "external-scripts/scriptDirectory2"
+    scriptDirectory3 = "external-scripts/scriptDirectory3"
+}
+```
+
+Note your script directories can be absolute paths instead of relative to
+your grails application directory.
+
+resources.groovy:
+```
+import edu.berkeley.groovy.ScriptRunnerImpl
+```
+```
+scriptRunner2(ScriptRunnerImpl, application.config?.externalGroovy?.scriptDirectory2)
+scriptRunner3(ScriptRunnerImpl, application.config?.externalGroovy?.scriptDirectory3)
+```
+
+There a few other other parameters you can pass to a ScriptRunnerImpl
+constructor.
+
+In resources.groovy, you can instantiate a bean using all the options using
+the map constructor:
+```
+scriptRunner4(ScriptRunnerImpl, [
+  scriptDirectory: application.config?.externalGroovy?.scriptDirectory4,
+  bootstrapScriptFile: "external-scripts/bootstrap/Bootstrap.groovy",
+  parentClassLoader: null
+])
+```
+
+In addition to scriptDirectory, there is:
+
+ * `bootstrapScriptFile` - If you want to override the default bootstrap
+   code, you can provide the path to your own Bootstrap.groovy file.
+
+ * `parentClassLoader` - By default, the script's class loader will have the
+   Grails class loader as its parent class loader.  This means scripts can
+   load any class that your Grails app can load.  You can either specify a
+   different parent ClassLoader, or you can set it to null, which means the
+   scripts will only be able to load classes from the JVM's system class
+   loader and from classes in scripts in your scriptDirectory.
+
+If you want to prevent injecting grailsApplication into the scripts, then
+after you instantiate your ScriptRunner, you can do:
+```
+scriptRunner.grailsApplication = null
+````
+
+You can also set the parentClassLoader after instantiation.
+
 ---
 
 **The rest of this page you only need to read if you're running into class
@@ -147,6 +234,9 @@ Advice:
    there's really no other way to hunt down the problem other than by the
    technique described in the "Debugging Class Unloading Issues" section
    below.
+ * Consider setting the ScriptRunnerImpl's parent class loader to null if
+   you're not using Grails features within your scripts, or not needing
+   classes from the web application's class loader.
 
 ## Debugging Class Unloading Issues
 
