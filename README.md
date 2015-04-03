@@ -121,11 +121,11 @@ reference to a class that the script's class loader loaded.  In object
 reference graph terms, there's a path from a "Root object" to the script's
 class loader.
 
-The way to hunt this down is by using jmap and jhat to do a heap dump, run
-jhat on that heap dump, and see what references are still being held to the
-script's class loader.  Use the "path from rootset" link on the
-ScriptClassLoader instance page on the jhat web server to trace the
-reference from the root object(s) to the class loader.
+The way to hunt this down is by using `jmap` and `jhat` to do a heap dump,
+run `jhat` on that heap dump, and see what references are still being held
+to the script's class loader.  Use the "Reference Chains from Rootset" link
+on the `ScriptClassLoader` instance page on the `jhat` web server to trace
+the reference from the root object(s) to the class loader.
 
 Example:
 
