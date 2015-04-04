@@ -47,7 +47,7 @@ class ScriptClassLoaderSpec extends Specification {
              */
             int i
             for (i = 0; i < 10000; i++) {
-                new ScriptClassLoader(stats)
+                new ScriptClassLoader(stats, false)
                 //if(i % 1000 == 0)
                 //  System.out.println(stats.getLoadedCount() + ", " + stats.getUnloadedCount())
                 if (stats.unloadedCount > 0)
