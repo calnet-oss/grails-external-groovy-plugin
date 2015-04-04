@@ -118,7 +118,15 @@ class ScriptRunnerImpl implements ScriptRunner {
             // scriptDirectory using the scriptClassName, which we injected
             // above with our shell.setProperty() call
             //
-            String defaultBootstrapScriptCode = """getClass().getClassLoader().loadClass(scriptClassName).newInstance()"""
+            String defaultBootstrapScriptCode = """
+              try {
+                if(!getClass().classLoader.parent.parent.isScriptClassLoader())
+                  throw new RuntimeException("Not a ScriptClassLoader")
+              } catch(Exception e) {
+                throw new RuntimeException("Not a ScriptClassLoader")
+              }
+              getClass().classLoader.parent.parent.loadClass(scriptClassName).newInstance()
+            """
             bootstrapSource = new GroovyCodeSource(defaultBootstrapScriptCode, "Bootstrap", scriptDirectory.toURI().toString())
             bootstrapSource.setCachable(false)
         }
