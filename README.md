@@ -59,6 +59,8 @@ and the `external-scripts` directory is the classpath root for the script's
 class loader.  You can put other classes in this directory too, as you
 normally could with Groovy.
 
+### Running with classes
+
 As an example, you could put two files in your `external-scripts` directory:
 `hello.groovy` and `Friend.groovy`.  `hello.groovy` will be the script you
 launch, and `Friend.groovy` will contain a `Friend` class.
@@ -80,6 +82,8 @@ class Friend {
 
 Then launch the hello script the same way as in the first example.
 
+### Using packages
+
 If you want to use packages, you can do that too.  For example, if you
 wanted the `Friend` class to be placed in the `myexample` package, you'd do
 the same as in the above example, but add `package myexample` at the top of
@@ -98,6 +102,8 @@ class hello {
   }
 }
 ```
+
+### Returning values from the script
 
 The `run()` method can also return an `Object` that
 `ScriptRunner.runScript()` will return as a `String` (by calling the
@@ -131,6 +137,28 @@ Example:
 The implementation of `ScriptRunner` will inject the `grailsApplication`
 property into the script, assuming that you are using an injected
 scriptRunner instance created by Spring.
+
+### Caching script files but still recompiling them when they change
+
+To cache script files so that the class loader doesn't recompile them every
+time a `runScript()` is called, instantiate a `ScriptRunnerImpl` with
+`cacheUnmodifiedScripts=true`.
+
+Example:
+```
+ScriptRunner scriptRunner = new ScriptRunnerImpl(scriptDirectory, true)
+scriptRunner.runScript("hello") // will compile hello.groovy
+scriptRunner.runScript("hello") // will use cached hello class
+// go and modify hello.groovy
+scriptRunner.runScript("hello") // will recompile hello.groovy because it changed
+```
+
+You can look at `scriptRunner.statistics.compileCount` to verify that the
+`compileCount` is 2 for the above example.
+
+This will be because the `compileCount` increments for the first
+`runScript()`, doesn't for the second (it's cached) and does for the third
+(it recompiles due to modification).
 
 ### ScriptLoaderImpl 
 
@@ -187,6 +215,10 @@ In addition to `scriptDirectory`, there is:
    scripts will only be able to load classes from the JVM's system class
    loader and from classes in scripts in your scriptDirectory.
 
+ * `cacheUnmodifiedScripts` - If true, will cache script file classes if the
+   script file goes unmodified, but will still recompile script files when
+   they are modified.
+
 If you want to prevent injecting `grailsApplication` into the scripts, then
 after you instantiate your `ScriptRunner`, you can do:
 ```
@@ -238,6 +270,13 @@ Advice:
  * Consider setting the ScriptRunnerImpl's parent class loader to null if
    you're not using Grails features within your scripts, or not needing
    classes from the web application's class loader.
+ * Don't create new ClassLoaders in your scripts or utilize libraries that
+   do so.  If you use anything other than the ScriptClassLoader within your
+   script, then you run the likely risk that these class loaders will create
+   classes that end up cached by the `GroovySystem` `metaClassRegistry`.  If
+   these classes are cached there, then the script's class loader won't be
+   eligible for garbage collection due to cached classes in the metaClass
+   registry.
 
 ## Debugging Class Unloading Issues
 
