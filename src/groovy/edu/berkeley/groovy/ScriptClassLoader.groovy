@@ -1,5 +1,6 @@
 package edu.berkeley.groovy
 
+import groovy.util.logging.Log4j
 import org.codehaus.groovy.control.CompilationFailedException
 
 /**
@@ -11,14 +12,19 @@ import org.codehaus.groovy.control.CompilationFailedException
  * unloads is to detect class loader garbage collection problems (to detect
  * a "class loader leak.")
  */
+@Log4j
 class ScriptClassLoader extends GroovyClassLoader {
 
     private Statistics stats
     boolean recompileOnScriptChanges
+    boolean isDebugEnabled
+
+    // used for debugging
+    private def config = org.codehaus.groovy.control.CompilerConfiguration.DEFAULT
 
     ScriptClassLoader() {
         super()
-        verifyConstruction()
+        validateConstruction()
     }
 
     ScriptClassLoader(Map map) {
@@ -26,28 +32,41 @@ class ScriptClassLoader extends GroovyClassLoader {
         this.stats = map['stats']
         this.recompileOnScriptChanges = map['recompileOnScriptChanges']
         setShouldRecompile(recompileOnScriptChanges)
-        verifyConstruction()
+        validateConstruction()
     }
 
+    /**
+     * @param stats Statistics object that tracks loading, unloading and
+     *        compilation counts.
+     * @param recompileOnScriptChanges If true, recompile a script if the
+     *        file changes.
+     */
     ScriptClassLoader(Statistics stats, boolean recompileOnScriptChanges) {
         super()
         this.stats = stats
+        this.recompileOnScriptChanges = recompileOnScriptChanges
         setShouldRecompile(recompileOnScriptChanges)
-        verifyConstruction()
+        validateConstruction()
     }
 
     ScriptClassLoader(ClassLoader parent, Statistics stats, boolean recompileOnScriptChanges) {
         super(parent)
         this.stats = stats
+        this.recompileOnScriptChanges = recompileOnScriptChanges
         setShouldRecompile(recompileOnScriptChanges)
-        verifyConstruction()
+        validateConstruction()
     }
 
-    private void verifyConstruction() {
+    private void validateConstruction() {
         if (stats == null) {
             throw new RuntimeException("Must pass a Statistics object into the constructor")
         }
         stats.signalClassLoaderLoad() // increment the load count
+        checkDebuggingEnabled()
+    }
+
+    public boolean isScriptClassLoader() {
+        return true
     }
 
     @Override
@@ -67,26 +86,29 @@ class ScriptClassLoader extends GroovyClassLoader {
         }
     }
 
-    /*
     @Override
     public Class parseClass(GroovyCodeSource codeSource, boolean shouldCacheSource) throws CompilationFailedException {
-        //println("Running parseClass for ${codeSource.name}, isCachable=${codeSource.isCachable()}: shouldCacheSource=$shouldCacheSource")
-        super.parseClass(codeSource, shouldCacheSource)
+        if (isDebugEnabled)
+            log.debug("parseClass() for ${codeSource.name}, isCachable=${codeSource.isCachable()}: shouldCacheSource=$shouldCacheSource")
+        // increment the compile count
+        stats.signalCompiled()
+        return super.parseClass(codeSource, shouldCacheSource)
     }
 
-    def config = org.codehaus.groovy.control.CompilerConfiguration.DEFAULT
     @Override
     protected boolean isRecompilable(Class cls) {
         boolean result = super.isRecompilable(cls)
-        if(cls != null) {
-          println("isRecompilable() for ${cls ? cls.name : 'null'} returning $result")
-          println("  isShouldRecompile() = " + isShouldRecompile())
-          println("  config.getRecompileGroovySource() = " + config.getRecompileGroovySource())
-          println("  (if true then not recompilable) a: " + (cls.getClassLoader() == this))
-          println("  (if true then not recompilable) b: " + (isShouldRecompile() == null && !config.getRecompileGroovySource()))
-          println("  (if true then not recompilable) c: " + (isShouldRecompile() != null && !isShouldRecompile()))
-          println("  (if true then not recompilable) d: " + (!GroovyObject.class.isAssignableFrom(cls)))
-          println("  (if true then not recompilable) e: " + (getTimeStamp(cls) == Long.MAX_VALUE))
+        if (isDebugEnabled && cls != null) {
+            // show the elements that go into the decision from the
+            // GroovyClassLoader source
+            log.debug("isRecompilable() for ${cls ? cls.name : 'null'} returning $result")
+            log.debug("  isShouldRecompile() = " + isShouldRecompile())
+            log.debug("  config.getRecompileGroovySource() = " + config.getRecompileGroovySource())
+            log.debug("  (if true then not recompilable) a: " + (cls.getClassLoader() == this))
+            log.debug("  (if true then not recompilable) b: " + (isShouldRecompile() == null && !config.getRecompileGroovySource()))
+            log.debug("  (if true then not recompilable) c: " + (isShouldRecompile() != null && !isShouldRecompile()))
+            log.debug("  (if true then not recompilable) d: " + (!GroovyObject.class.isAssignableFrom(cls)))
+            log.debug("  (if true then not recompilable) e: " + (getTimeStamp(cls) == Long.MAX_VALUE))
         }
         return result
     }
@@ -94,20 +116,63 @@ class ScriptClassLoader extends GroovyClassLoader {
     @Override
     protected boolean isSourceNewer(URL source, Class cls) throws IOException {
         boolean result = super.isSourceNewer(source, cls)
-        println("isSourceNewer() for source=$source, cls=${cls ? cls.name : 'null'} returning $result")
+        if (isDebugEnabled) {
+            // show the elements that go into the decision from the
+            // GroovyClassLoader source
+            log.debug("isSourceNewer() for source=$source, cls=${cls ? cls.name : 'null'} returning $result")
+            log.debug("  isFile(source) = " + isFile(source))
+            long fileLastModified = new File(source.getPath().replace("/", new String(File.separatorChar)).replace("|", ":")).lastModified()
+            log.debug("  file last modified = " + fileLastModified)
+            long classTimestamp = getTimeStamp(cls)
+            log.debug("  existing class timestamp = " + classTimestamp)
+            long difference = fileLastModified - classTimestamp
+            log.debug("  time difference = " + difference)
+            int minimumInterval = config.getMinimumRecompilationInterval()
+            log.debug("  minimumRecompilationInterval = " + minimumInterval)
+            log.debug("  existing class timestamp + minimumRecompilationInterval < file last modified? : " + (classTimestamp + minimumInterval < fileLastModified))
+        }
         return result
     }
-    */
 
     @Override
     protected Class loadClass(final String name, boolean resolve) throws ClassNotFoundException {
+        if (isDebugEnabled)
+            log.debug("loadClass(): name=$name, resolve=$resolve, recompileOnScriptChanges=$recompileOnScriptChanges")
         if (recompileOnScriptChanges) {
             // We want preferClassOverScript to be false so that it checks
             // the timestamp on the file for changes.
-            return super.loadClass(name, true, false, resolve)
+            return loadClass(name, true, false, resolve)
         } else {
-            // preferClassOverScript false
-            return super.loadClass(name, false, false, resolve)
+            // preferClassOverScript true
+            return loadClass(name, true, true, resolve)
+        }
+    }
+
+    @Override
+    public Class loadClass(final String name, boolean lookupScriptFiles, boolean preferClassOverScript, boolean resolve) {
+        if (isDebugEnabled) {
+            log.debug("loadClass(): name=$name, lookupScriptFiles=$lookupScriptFiles, preferClassOverScript=$preferClassOverScript, resolve=$resolve")
+            log.debug("  cacheEntry=" + getClassCacheEntry(name) + ", classCache=" + System.identityHashCode(classCache) + ", this=" + this)
+        }
+        Class result = super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve)
+        if (isDebugEnabled) {
+            log.debug("  After Load")
+            log.debug("    cacheEntry=" + getClassCacheEntry(name) + ", classCache=" + System.identityHashCode(classCache) + ", this=" + this)
+        }
+        return result
+    }
+
+    public void enableDebugging() {
+        log.setLevel(org.apache.log4j.Level.DEBUG)
+        checkDebuggingEnabled()
+    }
+
+    private void checkDebuggingEnabled() {
+        try {
+            isDebugEnabled = log.isDebugEnabled()
+        }
+        catch (Exception e) {
+            isDebugEnabled = false
         }
     }
 }
