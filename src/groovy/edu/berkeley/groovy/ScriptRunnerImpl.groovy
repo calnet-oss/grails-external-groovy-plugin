@@ -74,7 +74,7 @@ class ScriptRunnerImpl implements ScriptRunner {
     protected ScriptClassLoader newClassLoaderInstance() throws ScriptRunnerException {
         // utilize the grails class loader as the parent to our
         // ScriptClassLoader
-        ScriptClassLoader scl = (parentClassLoader != null ? new ScriptClassLoader(parentClassLoader, statistics) : new ScriptClassLoader(statistics))
+        ScriptClassLoader scl = (parentClassLoader != null ? new ScriptClassLoader(parentClassLoader, statistics, false) : new ScriptClassLoader(statistics, false))
         // add our scriptDirectory to class path of our ScriptClassLoader
         scl.addURL(scriptDirectory.toURI().toURL())
         return scl
