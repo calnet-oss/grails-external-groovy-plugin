@@ -1,7 +1,9 @@
 package edu.berkeley.groovy
 
+import groovy.util.logging.Log4j
 import org.springframework.beans.factory.annotation.Autowired
 
+@Log4j
 class ScriptRunnerImpl implements ScriptRunner {
 
     // mandatory location of scripts
@@ -17,6 +19,16 @@ class ScriptRunnerImpl implements ScriptRunner {
     // desired, this must be explicitly set to null.
     ClassLoader parentClassLoader = getClass().getClassLoader()
 
+    // If false, then we will use a new ScriptClassLoader for each
+    // invocation of runScript().  No caching of scripts will occur between
+    // invocations of runScript().  If true, we will reuse the same
+    // ScriptClassLoader for each invocation of runScript() (for this
+    // instance of the ScriptRunner), and the ScriptClassLoader will not
+    // recompile scripts that have not been changed.  Howeverm the
+    // ScriptClassLoader will still recompile a script if has changed on the
+    // filesystem.
+    boolean cacheUnmodifiedScripts
+
     // auto-wired if this object is instantiated from Spring within Grails
     // (not mandatory)
     @Autowired
@@ -24,12 +36,24 @@ class ScriptRunnerImpl implements ScriptRunner {
 
     // internally managed
     private Statistics statistics
+    private boolean isDebugEnabled
+    private ScriptClassLoader classLoaderInstance
 
     /**
-     * The script will run using default Bootstrap code.
+     * The script will run using default Bootstrap code and without caching
+     * script classes.
      */
     ScriptRunnerImpl(File scriptDirectory) {
-        this(null, scriptDirectory)
+        this(null, scriptDirectory, false)
+    }
+
+    /**
+     * The script will run using default Bootstrap code and, if
+     * cacheUnmodifiedScripts is true, will cache classes from script files
+     * that have not been modified.
+     */
+    ScriptRunnerImpl(File scriptDirectory, boolean cacheUnmodifiedScripts) {
+        this(null, scriptDirectory, cacheUnmodifiedScripts)
     }
 
     /**
@@ -38,11 +62,14 @@ class ScriptRunnerImpl implements ScriptRunner {
      *        default Bootstrap script will be used.
      * @param scriptDirectory The classpath root directory where the scripts
      *        are contained.
+     * @param cacheUnmodifiedScripts Cache the classes of scripts that have
+     *        not been modified.
      */
-    ScriptRunnerImpl(File bootstrapScriptFile, File scriptDirectory) {
+    ScriptRunnerImpl(File bootstrapScriptFile, File scriptDirectory, boolean cacheUnmodifiedScripts) {
         this.bootstrapScriptFile = bootstrapScriptFile
         this.scriptDirectory = scriptDirectory
         this.statistics = new StatisticsImpl()
+        this.cacheUnmodifiedScripts = cacheUnmodifiedScripts
         validateConstruction()
     }
 
@@ -52,9 +79,11 @@ class ScriptRunnerImpl implements ScriptRunner {
         if (map.containsKey("bootstrapScriptFile"))
             this.bootstrapScriptFile = map.bootstrapScriptFile
         if (map.containsKey("parentClassLoader"))
-            parentClassLoader = map.parentClassLoader
+            this.parentClassLoader = map.parentClassLoader
         if (map.containsKey("grailsApplication"))
-            grailsApplication = map.grailsApplication
+            this.grailsApplication = map.grailsApplication
+        if (map.containsKey("cacheUnmodifiedScripts"))
+            this.cacheUnmodifiedScripts  = map.cacheUnmodifiedScripts
         validateConstruction()
     }
 
@@ -69,15 +98,29 @@ class ScriptRunnerImpl implements ScriptRunner {
             throw new IllegalArgumentException("The scriptDirectory must be passed to the constructor")
         if (!scriptDirectory.exists() || !scriptDirectory.isDirectory())
             throw new RuntimeException("${scriptDirectory.absolutePath} does not exist or is not a directory")
+        checkDebuggingEnabled()
     }
 
-    protected ScriptClassLoader newClassLoaderInstance() throws ScriptRunnerException {
-        // utilize the grails class loader as the parent to our
-        // ScriptClassLoader
-        ScriptClassLoader scl = (parentClassLoader != null ? new ScriptClassLoader(parentClassLoader, statistics, false) : new ScriptClassLoader(statistics, false))
-        // add our scriptDirectory to class path of our ScriptClassLoader
-        scl.addURL(scriptDirectory.toURI().toURL())
-        return scl
+    protected ScriptClassLoader getClassLoaderInstance() throws ScriptRunnerException {
+        if (!cacheUnmodifiedScripts) {
+            // non-caching mode - don't reuse ScriptClassLoaders
+
+            // use a parentClassLoader if it's set
+            ScriptClassLoader scl = (parentClassLoader != null ? new ScriptClassLoader(parentClassLoader, statistics, true) : new ScriptClassLoader(statistics, true))
+            // add our scriptDirectory to class path of our ScriptClassLoader
+            scl.addURL(scriptDirectory.toURI().toURL())
+            return scl
+        } else {
+            // caching mode -- reuse ScriptClassLoader
+
+            if (classLoaderInstance == null) {
+                // use a parentClassLoader if it's set
+                classLoaderInstance = (parentClassLoader != null ? new ScriptClassLoader(parentClassLoader, statistics, true) : new ScriptClassLoader(statistics, true))
+                // add our scriptDirectory to class path of our ScriptClassLoader
+                classLoaderInstance.addURL(scriptDirectory.toURI().toURL())
+            }
+            return classLoaderInstance
+        }
     }
 
     /**
@@ -90,7 +133,7 @@ class ScriptRunnerImpl implements ScriptRunner {
      */
     public Object runScript(String className) throws ScriptRunnerException {
         // instantiate a new ScriptClassLoader for this script
-        ScriptClassLoader scl = newClassLoaderInstance()
+        ScriptClassLoader scl = getClassLoaderInstance()
 
         /**
          * Execute the Bootstrap script which should load the script class
@@ -158,4 +201,25 @@ class ScriptRunnerImpl implements ScriptRunner {
 
         return resultString
     }
+
+    public Statistics getStatistics() {
+        return statistics
+    }
+
+    public void enableDebugging() {
+        log.setLevel(org.apache.log4j.Level.DEBUG)
+        checkDebuggingEnabled()
+        if (classLoaderInstance != null)
+            classLoaderInstance.enableDebugging()
+    }
+
+    private void checkDebuggingEnabled() {
+        try {
+            isDebugEnabled = log.isDebugEnabled()
+        }
+        catch (Exception e) {
+            isDebugEnabled = false
+        }
+    }
+
 }
