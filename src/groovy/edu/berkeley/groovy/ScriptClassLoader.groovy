@@ -90,9 +90,10 @@ class ScriptClassLoader extends GroovyClassLoader {
     public Class parseClass(GroovyCodeSource codeSource, boolean shouldCacheSource) throws CompilationFailedException {
         if (isDebugEnabled)
             log.debug("parseClass() for ${codeSource.name}, isCachable=${codeSource.isCachable()}: shouldCacheSource=$shouldCacheSource")
+        Class cls = super.parseClass(codeSource, shouldCacheSource)
         // increment the compile count
-        stats.signalCompiled()
-        return super.parseClass(codeSource, shouldCacheSource)
+        stats.signalCompiled(cls.name)
+        return cls
     }
 
     @Override

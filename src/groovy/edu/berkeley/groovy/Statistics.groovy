@@ -5,5 +5,5 @@ interface Statistics {
 
     void signalClassLoaderUnload()
 
-    void signalCompiled()
+    void signalCompiled(String name)
 }

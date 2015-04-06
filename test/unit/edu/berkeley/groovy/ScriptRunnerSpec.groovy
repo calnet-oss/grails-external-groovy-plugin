@@ -42,6 +42,17 @@ class ScriptRunnerSpec extends Specification {
             result == "my test property"
     }
 
+    void "test existence of injected log instance"() {
+        given:
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(scriptDirectory)
+        when:
+            Object result = scriptRunner.runScript("testLogInstance")
+        then:
+            result != null
+            // results come back as Strings
+            result.startsWith("org.codehaus.groovy.tools.shell.util.Logger")
+    }
+
     private void writeSource(File sourceFile, String source) throws IOException {
         FileWriter writer = new FileWriter(sourceFile)
         try {
@@ -68,7 +79,9 @@ class ScriptRunnerSpec extends Specification {
             println("result = $result")
         then:
             result == "run number 2"
-            scriptRunner.statistics.compiledCount == 2
+            scriptRunner.statistics.totalCompilationCount == 2
+            scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 1
+            scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 2
     }
 
     void "test unchanged source file, without caching"() {
@@ -87,7 +100,9 @@ class ScriptRunnerSpec extends Specification {
         then:
             result == "run number 1"
             // unchanged, but caching is disabled, so recompiled twice
-            scriptRunner.statistics.compiledCount == 2
+            scriptRunner.statistics.totalCompilationCount == 2
+            scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 1
+            scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 2
     }
 
     void "test recompiling unchanged source file, with caching enabled"() {
@@ -107,7 +122,9 @@ class ScriptRunnerSpec extends Specification {
             result == "run number 1"
             // only one compilation because the second run was unchanged
             // and cached
-            scriptRunner.statistics.compiledCount == 1
+            scriptRunner.statistics.totalCompilationCount == 1
+            scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 0
+            scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 1
     }
 
     void "test recompiling changed source file, with caching enabled"() {
@@ -131,6 +148,9 @@ class ScriptRunnerSpec extends Specification {
             println("result = $result")
         then:
             result == "run number 2"
-            scriptRunner.statistics.compiledCount == 2
+            scriptRunner.statistics.totalCompilationCount == 2
+            // compiled once, then recompiled after the change
+            scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 1
+            scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 2
     }
 }
