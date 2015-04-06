@@ -1,6 +1,7 @@
 package edu.berkeley.groovy
 
 import groovy.util.logging.Log4j
+import org.codehaus.groovy.tools.shell.util.Logger
 import org.springframework.beans.factory.annotation.Autowired
 
 @Log4j
@@ -182,6 +183,9 @@ class ScriptRunnerImpl implements ScriptRunner {
         if (grailsApplication) {
             scriptInstance.metaClass.setProperty("grailsApplication", grailsApplication)
         }
+
+        // Inject a log instance for the script
+        scriptInstance.metaClass.setProperty("log", Logger.create(scriptInstance.getClass()))
 
         // Inject passed-in properties
         if (propertyInjections != null) {
