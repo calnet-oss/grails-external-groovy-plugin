@@ -83,7 +83,7 @@ class ScriptRunnerImpl implements ScriptRunner {
         if (map.containsKey("grailsApplication"))
             this.grailsApplication = map.grailsApplication
         if (map.containsKey("cacheUnmodifiedScripts"))
-            this.cacheUnmodifiedScripts  = map.cacheUnmodifiedScripts
+            this.cacheUnmodifiedScripts = map.cacheUnmodifiedScripts
         validateConstruction()
     }
 
@@ -131,7 +131,7 @@ class ScriptRunnerImpl implements ScriptRunner {
      *        scriptDirectory/myscript.groovy, then you would pass in
      *        "myscript" as the class name.
      */
-    public Object runScript(String className) throws ScriptRunnerException {
+    public Object runScript(String className, Map<String, Object> propertyInjections = null) throws ScriptRunnerException {
         // instantiate a new ScriptClassLoader for this script
         ScriptClassLoader scl = getClassLoaderInstance()
 
@@ -181,6 +181,13 @@ class ScriptRunnerImpl implements ScriptRunner {
         // Inject objects into our scriptInstance object using metaClass
         if (grailsApplication) {
             scriptInstance.metaClass.setProperty("grailsApplication", grailsApplication)
+        }
+
+        // Inject passed-in properties
+        if (propertyInjections != null) {
+            for (def entry in propertyInjections) {
+                scriptInstance.metaClass.setProperty(entry.key, entry.value)
+            }
         }
 
         // Run the script instance.  If the script has no class defined in

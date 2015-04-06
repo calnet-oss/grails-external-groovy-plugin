@@ -138,6 +138,21 @@ The implementation of `ScriptRunner` will inject the `grailsApplication`
 property into the script, assuming that you are using an injected
 scriptRunner instance created by Spring.
 
+You can also add your own property injections by passing a map as the second
+parameter to `runScript()`.
+
+Example:
+```
+  scriptRunner.runScript("testScript", [myProperty: 'my test property'])
+```
+
+`testScript.groovy`:
+```
+  println(myProperty)
+```
+
+This example will print out `my test property` to the console.
+
 ### Caching script files but still recompiling them when they change
 
 To cache script files so that the class loader doesn't recompile them every

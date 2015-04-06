@@ -33,6 +33,15 @@ class ScriptRunnerSpec extends Specification {
             result == "hello world"
     }
 
+    void "test caller injected property"() {
+        given:
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(scriptDirectory)
+        when:
+            Object result = scriptRunner.runScript("testInjectedProperty", [testProperty: "my test property"])
+        then:
+            result == "my test property"
+    }
+
     private void writeSource(File sourceFile, String source) throws IOException {
         FileWriter writer = new FileWriter(sourceFile)
         try {
