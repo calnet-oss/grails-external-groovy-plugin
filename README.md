@@ -138,6 +138,8 @@ The implementation of `ScriptRunner` will inject the `grailsApplication`
 property into the script, assuming that you are using an injected
 scriptRunner instance created by Spring.
 
+It will also inject an instance of a Groovy `Logger` as `log`.
+
 You can also add your own property injections by passing a map as the second
 parameter to `runScript()`.
 
