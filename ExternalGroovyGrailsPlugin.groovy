@@ -47,7 +47,7 @@ Execute external Groovy scripts from Grails.
     }
 
     def doWithSpring = {
-        scriptRunner(ScriptRunnerImpl, application.config?.externalGroovy?.defaultScriptDirectory, true)
+        scriptRunner(ScriptRunnerImpl, (application.config?.externalGroovy?.defaultScriptDirectory ? new File(application.config.externalGroovy.defaultScriptDirectory) : new File("external-scripts")), true)
     }
 
     def doWithDynamicMethods = { ctx ->
