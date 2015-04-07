@@ -187,7 +187,12 @@ class ScriptRunnerImpl implements ScriptRunner {
 
         // Run the Bootstrap script, which will return an instance of
         // the actual script class
-        Object scriptInstance = shell.run(bootstrapSource, [] as String[])
+        Object scriptInstance
+        try {
+            scriptInstance = shell.run(bootstrapSource, [] as String[])
+        } catch(Exception e) {
+            throw new ScriptRunnerException(e)
+        }
 
         // Inject objects into our scriptInstance object using metaClass
         if (grailsApplication) {
@@ -208,7 +213,12 @@ class ScriptRunnerImpl implements ScriptRunner {
         // it, then Groovy will implicitly create a Runnable class around
         // the script code.  If the script is a class, that class should
         // provide a run() method, which we execute here.
-        def result = scriptInstance.run()
+        def result
+        try {
+            result = scriptInstance.run()
+        } catch(Exception e) {
+            throw new ScriptRunnerException(e)
+        }
 
         // Don't want to hang on to any scl class references with the result
         // object.  That's why we turn it to a String.
