@@ -84,16 +84,19 @@ below, but here's quick summary:
  * `defaultScriptDirectory` - The directory containing your external scripts.
 
  * `cacheScripts` - Whether to cache the scripts or not.  If caching is
-   turned on, modified scripts will be recompiled.
+   turned on, modified scripts will be recompiled, but unmodified scripts
+   will have their classes cached across multiple calls to `runScript()`
+   within the same instance of a `scriptRunner`.
 
- * `launchScriptFileMonitorThread` - If true, will launch a monitoring
-   thread that will check the `defaultScriptDirectory` at a set interval for
-   script changes and reload the script class loader (i.e., clear the class
-   cache) when any script file is modified or deleted.
+ * `launchScriptFileMonitorThread` - (Only relevant if `cacheScripts=true`.)
+   If true, will launch a monitoring thread that will check the
+   `defaultScriptDirectory` at a set interval for script changes and reload
+   the script class loader (i.e., clear the class cache) when any script
+   file is modified or deleted.
 
- * `scriptFileMonitorThreadIntervalSeconds` - The interval, in number of
-   seconds, that the script file monitor thread will check for script
-   modifications.
+ * `scriptFileMonitorThreadIntervalSeconds` - (Only relevant if
+   launchScriptFileMonitorThread=true`.) The interval, in number of seconds,
+   that the script file monitor thread will check for script modifications.
 
 Note that the above configuration settings are utilized by the plugin to
 instantiate the default Spring bean, but if you instantiate your own
