@@ -42,6 +42,15 @@ class ScriptRunnerSpec extends Specification {
             result == "this class running in mypackage"
     }
 
+    void "test script in a package using a noncanonical path script directory"() {
+        given:
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File(scriptDirectory, "../running"))
+        when:
+            Object result = scriptRunner.runScript("mypackage.testPackageScript")
+        then:
+            result == "this class running in mypackage"
+    }
+
     void "test caller injected property"() {
         given:
             ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(scriptDirectory)
