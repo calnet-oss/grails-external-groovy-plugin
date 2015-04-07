@@ -117,7 +117,7 @@ class ScriptRunnerImpl implements ScriptRunner {
             // non-caching mode - don't reuse ScriptClassLoaders
 
             // use a parentClassLoader if it's set
-            ScriptClassLoader scl = (parentClassLoader != null ? new ScriptClassLoader(parentClassLoader, statistics, true) : new ScriptClassLoader(statistics, true))
+            ScriptClassLoader scl = (parentClassLoader != null ? new ScriptClassLoader(parentClassLoader, statistics, false) : new ScriptClassLoader(statistics, false))
             // add our scriptDirectory to class path of our ScriptClassLoader
             scl.addURL(scriptDirectory.toURI().toURL())
             return scl
