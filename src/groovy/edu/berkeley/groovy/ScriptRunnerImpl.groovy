@@ -3,6 +3,7 @@ package edu.berkeley.groovy
 import groovy.util.logging.Log4j
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import groovy.transform.Synchronized
 
 @Log4j
 class ScriptRunnerImpl implements ScriptRunner {
@@ -141,7 +142,8 @@ class ScriptRunnerImpl implements ScriptRunner {
         checkDebuggingEnabled()
     }
 
-    protected synchronized ScriptClassLoader getClassLoaderInstance() throws ScriptRunnerException {
+    @Synchronized
+    protected ScriptClassLoader getClassLoaderInstance() throws ScriptRunnerException {
         if (!cacheUnmodifiedScripts) {
             // non-caching mode - don't reuse ScriptClassLoaders
 
@@ -169,7 +171,8 @@ class ScriptRunnerImpl implements ScriptRunner {
      * is analagous to how Tomcat might reload a web application.  Only
      * relevant in caching mode.
      */
-    public synchronized void reloadClassLoader() {
+    @Synchronized
+    public void reloadClassLoader() {
         classLoaderInstance = null
     }
 
@@ -276,7 +279,8 @@ class ScriptRunnerImpl implements ScriptRunner {
         return statistics
     }
 
-    public synchronized void enableDebugging() {
+    @Synchronized
+    public void enableDebugging() {
         log.setLevel(org.apache.log4j.Level.DEBUG)
         checkDebuggingEnabled()
         if (classLoaderInstance != null)
