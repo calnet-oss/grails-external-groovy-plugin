@@ -220,6 +220,9 @@ To stop it when you're done with your `scriptRunner`:
   scriptRunner.stopScriptFileMonitorThread()
 ```
 
+You can also pass a `launchMonitorThread=true` parameter to certain
+`ScriptRunnerImpl` constructors.
+
 ### ScriptLoaderImpl 
 
 If you want more ScriptLoaders other than the default, you can add as many
@@ -246,8 +249,8 @@ your grails application directory.
 import edu.berkeley.groovy.ScriptRunnerImpl
 ```
 ```
-scriptRunner2(ScriptRunnerImpl, application.config?.externalGroovy?.scriptDirectory2)
-scriptRunner3(ScriptRunnerImpl, application.config?.externalGroovy?.scriptDirectory3)
+scriptRunner2(ScriptRunnerImpl, application.config.externalGroovy.scriptDirectory2)
+scriptRunner3(ScriptRunnerImpl, application.config.externalGroovy.scriptDirectory3)
 ```
 
 There a few other other parameters you can pass to a `ScriptRunnerImpl`
@@ -259,25 +262,38 @@ the map constructor:
 scriptRunner4(ScriptRunnerImpl, [
   scriptDirectory: application.config?.externalGroovy?.scriptDirectory4,
   bootstrapScriptFile: new File("external-scripts/bootstrap/Bootstrap.groovy"),
-  parentClassLoader: null
+  parentClassLoader: null,
+  cacheUnmodifiedScripts : true
 ])
 ```
 
-In addition to `scriptDirectory`, there is:
+There is:
 
- * `bootstrapScriptFile` - If you want to override the default bootstrap
-   code, you can provide the `File` to your own Bootstrap.groovy file.
+ * `File bootstrapScriptFile` - If you want to override the default
+   bootstrap code, you can provide the `File` to your own Bootstrap.groovy
+   file.
 
- * `parentClassLoader` - By default, the script's class loader will have the
-   Grails class loader as its parent class loader.  This means scripts can
-   load any class that your Grails app can load.  You can either specify a
-   different parent ClassLoader, or you can set it to null, which means the
-   scripts will only be able to load classes from the JVM's system class
-   loader and from classes in scripts in your scriptDirectory.
+ * `File` or `String` `scriptDirectory` - Directory containing your external
+   scripts.
+ 
+ * `ClassLoader parentClassLoader` - By default, the script's class loader
+   will have the Grails class loader as its parent class loader.  This means
+   scripts can load any class that your Grails app can load.  You can either
+   specify a different parent ClassLoader, or you can set it to null, which
+   means the scripts will only be able to load classes from the JVM's system
+   class loader and from classes in scripts in your scriptDirectory.
 
- * `cacheUnmodifiedScripts` - If true, will cache script file classes if the
-   script file goes unmodified, but will still recompile script files when
-   they are modified.
+ * `boolean cacheUnmodifiedScripts` - If true, will cache script file
+   classes if the script file goes unmodified, but will still recompile
+   script files when they are modified.
+
+ * `boolean launchMonitorThread` - If true, launch the script file monitor
+   thread to detect file changes at a set interval and reload the class
+   loader.
+
+ * `Integer checkIntervalSeconds` - The interval, in seconds, that the
+    script file monitor thread will scan the script directory for changed
+    files.
 
 If you want to prevent injecting `grailsApplication` into the scripts, then
 after you instantiate your `ScriptRunner`, you can do:

@@ -26,4 +26,6 @@ log4j = {
 
 externalGroovy {
     defaultScriptDirectory = "external-scripts/running"
+    launchScriptFileMonitorThread = false
+    //scriptFileMonitorThreadIntervalSeconds = 35
 }

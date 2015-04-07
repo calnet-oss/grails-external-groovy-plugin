@@ -43,27 +43,40 @@ class ScriptRunnerImpl implements ScriptRunner {
 
     /**
      * The script will run using default Bootstrap code and with caching
-     * of script classes.
+     * of script classes without the script monitor thread running.
      */
     ScriptRunnerImpl(File scriptDirectory) {
-        this(null, scriptDirectory, true)
+        this(null, scriptDirectory, true, false)
     }
 
+    /**
+     * The script will run using default Bootstrap code and with caching
+     * of script classes without the script monitor thread running.
+     */
     ScriptRunnerImpl(String scriptDirectory) {
-        this(null, new File(scriptDirectory), true)
+        this(null, new File(scriptDirectory), true, false)
     }
 
     /**
      * The script will run using default Bootstrap code and, if
      * cacheUnmodifiedScripts is true, will cache classes from script files
-     * that have not been modified.
+     * that have not been modified.  If launchMonitorThread is true, the
+     * script file monitor thread will be launched with the
+     * checkIntervalSeconds.
      */
-    ScriptRunnerImpl(File scriptDirectory, boolean cacheUnmodifiedScripts) {
-        this(null, scriptDirectory, cacheUnmodifiedScripts)
+    ScriptRunnerImpl(File scriptDirectory, boolean cacheUnmodifiedScripts, boolean launchMonitorThread = false, Integer checkIntervalSeconds = null) {
+        this(null, scriptDirectory, cacheUnmodifiedScripts, launchMonitorThread, checkIntervalSeconds)
     }
 
-    ScriptRunnerImpl(String scriptDirectory, boolean cacheUnmodifiedScripts) {
-        this(null, new File(scriptDirectory), cacheUnmodifiedScripts)
+    /**
+     * The script will run using default Bootstrap code and, if
+     * cacheUnmodifiedScripts is true, will cache classes from script files
+     * that have not been modified.  If launchMonitorThread is true, the
+     * script file monitor thread will be launched with the
+     * checkIntervalSeconds.
+     */
+    ScriptRunnerImpl(String scriptDirectory, boolean cacheUnmodifiedScripts, boolean launchMonitorThread = false, Integer checkIntervalSeconds = null) {
+        this(null, new File(scriptDirectory), cacheUnmodifiedScripts, launchMonitorThread, checkIntervalSeconds)
     }
 
     /**
@@ -74,13 +87,20 @@ class ScriptRunnerImpl implements ScriptRunner {
      *        are contained.
      * @param cacheUnmodifiedScripts Cache the classes of scripts that have
      *        not been modified.
+     * @param launchMonitorThread If true, launch the script file monitor
+     *        thread.
+     * @param checkIntervalSeconds Check interval for the script file
+     *        monitor thread.
      */
-    ScriptRunnerImpl(File bootstrapScriptFile, File scriptDirectory, boolean cacheUnmodifiedScripts) {
+    ScriptRunnerImpl(File bootstrapScriptFile, File scriptDirectory, boolean cacheUnmodifiedScripts, boolean launchMonitorThread, Integer checkIntervalSeconds = null) {
         this.bootstrapScriptFile = bootstrapScriptFile
         this.scriptDirectory = scriptDirectory
         this.statistics = new StatisticsImpl()
         this.cacheUnmodifiedScripts = cacheUnmodifiedScripts
         validateConstruction()
+        if (launchMonitorThread) {
+            launchScriptFileMonitorThread((checkIntervalSeconds != null ? checkIntervalSeconds : 30))
+        }
     }
 
     ScriptRunnerImpl(Map map) {
@@ -97,6 +117,14 @@ class ScriptRunnerImpl implements ScriptRunner {
         else
             this.cacheUnmodifiedScripts = true // default behavior is to cache
         validateConstruction()
+        if (map.containsKey("launchMonitorThread") && map.launchMonitorThread) {
+            Integer checkIntervalSeconds
+            if (map.containsKey("checkIntervalSeconds"))
+                checkIntervalSeconds = map.checkIntervalSeconds
+            else
+                checkIntervalSeconds = 30 // 30 second default
+            launchScriptFileMonitorThread(checkIntervalSeconds)
+        }
     }
 
     ScriptRunnerImpl() {
@@ -324,7 +352,7 @@ class ScriptRunnerImpl implements ScriptRunner {
         @Override
         public void run() {
             try {
-                log.info("Launched ScriptFileMonitorThread")
+                log.info("Launched ScriptFileMonitorThread with checkIntervalSeconds=${checkIntervalSeconds} monitoring directory ${scriptRunner.scriptDirectory.canonicalPath}")
                 while (!doStop) {
                     Map<File, Boolean> visitMap = [:]
                     checkDirectory(visitMap, scriptRunner.scriptDirectory)
