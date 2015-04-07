@@ -189,7 +189,7 @@ class ScriptClassLoader extends GroovyClassLoader {
             // get the classpath directory that contains this source fole
             File classpathLocation = getClasspathLocation(codeSource.file)
             if (classpathLocation == null)
-                throw new RuntimeException("Couldn't get classpath location for ${codeSoure.file}")
+                throw new RuntimeException("Couldn't get classpath location for ${codeSource.file}")
 
             // The expected directory is the classpath locaion plus the
             // package name with dots converted to a File.separator
