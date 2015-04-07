@@ -95,8 +95,9 @@ below, but here's a quick summary:
    file is modified or deleted.
 
  * `scriptFileMonitorThreadIntervalSeconds` - (Only relevant if
-   launchScriptFileMonitorThread=true`.) The interval, in number of seconds,
-   that the script file monitor thread will check for script modifications.
+   `launchScriptFileMonitorThread=true`.) The interval, in number of
+   seconds, that the script file monitor thread will check for script
+   modifications.
 
 Note that the above configuration settings are utilized by the plugin to
 instantiate the default Spring bean, but if you instantiate your own
