@@ -309,7 +309,7 @@ class ScriptRunnerImpl implements ScriptRunner {
      *        the filesystem for changes.
      */
     public void launchScriptFileMonitorThread(int checkIntervalSeconds) throws ScriptRunnerException {
-        if (scriptFileMonitorThread != null && scriptFileMonitorThread.isAlive()) {
+        if (isScriptFileMonitorThreadAlive()) {
             throw new ScriptRunnerException("scriptFileMonitorThread is already running")
         } else {
             scriptFileMonitorThread = new ScriptFileMonitorThread(this, checkIntervalSeconds)
@@ -321,7 +321,7 @@ class ScriptRunnerImpl implements ScriptRunner {
      * Stop the script monitor thread.
      */
     public void stopScriptFileMonitorThread() {
-        if (scriptFileMonitorThread != null && scriptFileMonitorThread.isAlive()) {
+        if (isScriptFileMonitorThreadAlive()) {
             scriptFileMonitorThread.doStop = true
             scriptFileMonitorThread.interrupt()
         }
