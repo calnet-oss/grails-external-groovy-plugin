@@ -210,8 +210,9 @@ class ScriptClassLoader extends GroovyClassLoader {
         for (URL url in getURLs()) {
             URI uri = url.toURI()
             if (uri.getScheme() == "file") {
-                if (file.getPath().startsWith(uri.getPath())) {
-                    return new File(uri)
+                File classpathLocation = new File(uri)
+                if (file.canonicalPath.startsWith(classpathLocation.canonicalPath)) {
+                    return classpathLocation
                 }
             }
         }
