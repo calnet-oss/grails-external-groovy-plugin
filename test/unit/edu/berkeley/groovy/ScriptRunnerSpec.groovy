@@ -164,6 +164,28 @@ class ScriptRunnerSpec extends Specification {
             scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 1
     }
 
+    void "test recompiling unchanged source file after a cache clear, with caching enabled"() {
+        given:
+            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy")
+            String scriptName = sourceFile.getName().replace(".groovy", "")
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(sourceFile.parentFile, true) // script caching
+        when:
+            // create a temporary source file
+            writeSource(sourceFile, "\"run number 1\"")
+            // run the script
+            assert scriptRunner.runScript(scriptName) == "run number 1"
+            // clear the class cache
+            scriptRunner.reloadClassLoader()
+            // run it again
+            Object result = scriptRunner.runScript(scriptName)
+        then:
+            result == "run number 1"
+            // should be two compilations because we cleared the class cache
+            scriptRunner.statistics.totalCompilationCount == 2
+            scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 1
+            scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 2
+    }
+
     void "test recompiling changed source file, with caching enabled"() {
         given:
             File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy")

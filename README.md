@@ -194,6 +194,12 @@ that the `totalCompilationCount` is 3 for the above example.  Each
 runScript() results in a compilation regardless of whether the script file
 has changed or not.
 
+### Reloading the class loader (clearing the cache)
+
+If running in cache mode, to clear the class cache, you can call
+`scriptRunner.reloadClassLoader()`.  This will discard the class loader and
+instantiate a new one, effectively clearing out your class cache.
+
 ### ScriptLoaderImpl 
 
 If you want more ScriptLoaders other than the default, you can add as many

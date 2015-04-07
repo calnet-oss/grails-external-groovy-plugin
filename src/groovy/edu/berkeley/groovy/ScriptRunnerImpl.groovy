@@ -135,6 +135,16 @@ class ScriptRunnerImpl implements ScriptRunner {
     }
 
     /**
+     * "Reload" the class loader by instantiating a new one and discarding
+     * the old one.  This has the effect of reloading all the scripts.  It
+     * is analagous to how Tomcat might reload a web application.  Only
+     * relevant in caching mode.
+     */
+    public void reloadClassLoader() {
+        cacheUnmodifiedScripts = null
+    }
+
+    /**
      * Run an external script in the scriptDirectory.
      *
      * @param className Is the class name of the script in the
@@ -190,7 +200,7 @@ class ScriptRunnerImpl implements ScriptRunner {
         Object scriptInstance
         try {
             scriptInstance = shell.run(bootstrapSource, [] as String[])
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new ScriptRunnerException(e)
         }
 
@@ -216,7 +226,7 @@ class ScriptRunnerImpl implements ScriptRunner {
         def result
         try {
             result = scriptInstance.run()
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new ScriptRunnerException(e)
         }
 
