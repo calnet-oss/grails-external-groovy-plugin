@@ -48,6 +48,10 @@ class ScriptRunnerImpl implements ScriptRunner {
         this(null, scriptDirectory, false)
     }
 
+    ScriptRunnerImpl(String scriptDirectory) {
+        this(null, new File(scriptDirectory), false)
+    }
+
     /**
      * The script will run using default Bootstrap code and, if
      * cacheUnmodifiedScripts is true, will cache classes from script files
@@ -55,6 +59,10 @@ class ScriptRunnerImpl implements ScriptRunner {
      */
     ScriptRunnerImpl(File scriptDirectory, boolean cacheUnmodifiedScripts) {
         this(null, scriptDirectory, cacheUnmodifiedScripts)
+    }
+
+    ScriptRunnerImpl(String scriptDirectory, boolean cacheUnmodifiedScripts) {
+        this(null, new File(scriptDirectory), cacheUnmodifiedScripts)
     }
 
     /**
@@ -76,7 +84,7 @@ class ScriptRunnerImpl implements ScriptRunner {
 
     ScriptRunnerImpl(Map map) {
         if (map.containsKey("scriptDirectory"))
-            this.scriptDirectory = map.scriptDirectory
+            this.scriptDirectory = (map.scriptDirectory instanceof File ? map.scriptDirectory : new File(map.scriptDirectory))
         if (map.containsKey("bootstrapScriptFile"))
             this.bootstrapScriptFile = map.bootstrapScriptFile
         if (map.containsKey("parentClassLoader"))
