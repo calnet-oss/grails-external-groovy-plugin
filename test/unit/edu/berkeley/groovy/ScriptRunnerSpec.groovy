@@ -8,6 +8,7 @@ import spock.lang.Specification
 class ScriptRunnerSpec extends Specification {
 
     File scriptDirectory = new File("external-scripts/running")
+    File badScriptDirectory = new File("external-scripts/bad-scripts")
 
     def setup() {
     }
@@ -71,7 +72,7 @@ class ScriptRunnerSpec extends Specification {
 
     void "test script with a package name mismatched to its directory"() {
         given:
-            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File("external-scripts/bad-scripts"))
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(badScriptDirectory)
         when:
             Object result = scriptRunner.runScript("mypackage.badPackageScript")
         then:
@@ -81,7 +82,7 @@ class ScriptRunnerSpec extends Specification {
 
     void "test script with a missing package name"() {
         given:
-            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File("external-scripts/bad-scripts"))
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(badScriptDirectory)
         when:
             Object result = scriptRunner.runScript("mypackage.missingPackageScript")
         then:
