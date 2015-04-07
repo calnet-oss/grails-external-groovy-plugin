@@ -77,7 +77,7 @@ class ScriptRunnerSpec extends Specification {
             Object result = scriptRunner.runScript("mypackage.badPackageScript")
         then:
             Exception e = thrown()
-            println(e)
+            e instanceof ScriptClassLoaderException
     }
 
     void "test script with a missing package name"() {
@@ -87,7 +87,7 @@ class ScriptRunnerSpec extends Specification {
             Object result = scriptRunner.runScript("mypackage.missingPackageScript")
         then:
             Exception e = thrown()
-            println(e)
+            e instanceof ScriptClassLoaderException
     }
 
     private void writeSource(File sourceFile, String source) throws IOException {
