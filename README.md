@@ -59,6 +59,49 @@ and the `external-scripts` directory is the classpath root for the script's
 class loader.  You can put other classes in this directory too, as you
 normally could with Groovy.
 
+### Configuring the default injected script runner bean
+
+To configure the `scriptRunner` default injected bean, you can set the
+following config options in `Config.groovy` that controls how this bean is
+instantiated by the plugin:
+
+`Config.groovy`:
+```
+externalGroovy {
+    defaultScriptDirectory = "external-scripts"
+    cacheScripts = true
+    launchScriptFileMonitorThread = false
+    scriptFileMonitorThreadIntervalSeconds = 30
+}
+```
+
+What you see above are the default settings for the bean.  To overide the
+default, place the overrides in your `Config.groovy`.
+
+The above settings are described in greater detail in different sections
+below, but here's quick summary:
+
+ * `defaultScriptDirectory` - The directory containing your external scripts.
+
+ * `cacheScripts` - Whether to cache the scripts or not.  If caching is
+   turned on, modified scripts will be recompiled.
+
+ * `launchScriptFileMonitorThread` - If true, will launch a monitoring
+   thread that will check the `defaultScriptDirectory` at a set interval for
+   script changes and reload the script class loader (i.e., clear the class
+   cache) when any script file is modified or deleted.
+
+ * `scriptFileMonitorThreadIntervalSeconds` - The interval, in number of
+   seconds, that the script file monitor thread will check for script
+   modifications.
+
+Note that the above configuration settings are utilized by the plugin to
+instantiate the default Spring bean, but if you instantiate your own
+`ScriptRunnerImpl`, these config settings have no effect unless you pass
+them as parameters to the `ScriptRunnerImpl` constructor.  You can see this
+in action in the `doWithSpring` closure in
+[ExternalGroovyGrailsPlugin.groovy].
+
 ### Running with classes
 
 As an example, you could put two files in your `external-scripts` directory:
@@ -223,10 +266,10 @@ To stop it when you're done with your `scriptRunner`:
 You can also pass a `launchMonitorThread=true` parameter to certain
 `ScriptRunnerImpl` constructors.
 
-### ScriptLoaderImpl 
+### ScriptRunnerImpl 
 
-If you want more ScriptLoaders other than the default, you can add as many
-ScriptLoader beans as you want via `resources.groovy`.  You'll probably also
+If you want more ScriptRunners other than the default, you can add as many
+ScriptRunner beans as you want via `resources.groovy`.  You'll probably also
 want to add the script directories for these loaders in the `externalGroovy`
 section in your `Config.groovy` file.
 
