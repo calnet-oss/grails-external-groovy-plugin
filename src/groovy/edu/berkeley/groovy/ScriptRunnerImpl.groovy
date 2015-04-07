@@ -38,7 +38,8 @@ class ScriptRunnerImpl implements ScriptRunner {
     // internally managed
     private Statistics statistics
     private boolean isDebugEnabled
-    private ScriptClassLoader classLoaderInstance
+    private volatile ScriptClassLoader classLoaderInstance
+    private ScriptFileMonitorThread scriptFileMonitorThread
 
     /**
      * The script will run using default Bootstrap code and with caching
@@ -112,7 +113,7 @@ class ScriptRunnerImpl implements ScriptRunner {
         checkDebuggingEnabled()
     }
 
-    protected ScriptClassLoader getClassLoaderInstance() throws ScriptRunnerException {
+    protected synchronized ScriptClassLoader getClassLoaderInstance() throws ScriptRunnerException {
         if (!cacheUnmodifiedScripts) {
             // non-caching mode - don't reuse ScriptClassLoaders
 
@@ -140,8 +141,8 @@ class ScriptRunnerImpl implements ScriptRunner {
      * is analagous to how Tomcat might reload a web application.  Only
      * relevant in caching mode.
      */
-    public void reloadClassLoader() {
-        cacheUnmodifiedScripts = null
+    public synchronized void reloadClassLoader() {
+        classLoaderInstance = null
     }
 
     /**
@@ -247,7 +248,7 @@ class ScriptRunnerImpl implements ScriptRunner {
         return statistics
     }
 
-    public void enableDebugging() {
+    public synchronized void enableDebugging() {
         log.setLevel(org.apache.log4j.Level.DEBUG)
         checkDebuggingEnabled()
         if (classLoaderInstance != null)
@@ -263,4 +264,119 @@ class ScriptRunnerImpl implements ScriptRunner {
         }
     }
 
+    /**
+     * Launches a daemon thread that monitors the script directory for
+     * script file changes and if there are any changes will invoke
+     * reloadClassLoader() to clear the class cache.  The thread will look
+     * for a changes at a set interval.
+     *
+     * @param checkIntervalSeconds The number of seconds to wait before
+     *        checking again.  Set this too high and you won't detect
+     *        changes in the time you'd like.  Set this too low, and you'll
+     *        hurt performance, as the thread will be constantly scanning
+     *        the filesystem for changes.
+     */
+    public void launchScriptFileMonitorThread(int checkIntervalSeconds) throws ScriptRunnerException {
+        if (scriptFileMonitorThread != null && scriptFileMonitorThread.isAlive()) {
+            throw new ScriptRunnerException("scriptFileMonitorThread is already running")
+        } else {
+            scriptFileMonitorThread = new ScriptFileMonitorThread(this, checkIntervalSeconds)
+            scriptFileMonitorThread.start()
+        }
+    }
+
+    /**
+     * Stop the script monitor thread.
+     */
+    public void stopScriptFileMonitorThread() {
+        if (scriptFileMonitorThread != null && scriptFileMonitorThread.isAlive()) {
+            scriptFileMonitorThread.doStop = true
+            scriptFileMonitorThread.interrupt()
+        }
+    }
+
+    /**
+     * @return true if script monitor thread is running
+     */
+    public boolean isScriptFileMonitorThreadAlive() {
+        return scriptFileMonitorThread != null && scriptFileMonitorThread.isAlive()
+    }
+
+    /**
+     * A thread that monitors for script file modifications in the script
+     * directory.  It scans at a specified interval.
+     */
+    @Log4j
+    private static class ScriptFileMonitorThread extends Thread {
+        ScriptRunnerImpl scriptRunner
+        int checkIntervalSeconds
+        volatile boolean doStop
+
+        ScriptFileMonitorThread(ScriptRunnerImpl scriptRunner, int checkIntervalSeconds) {
+            setDaemon(true)
+            this.scriptRunner = scriptRunner
+            this.checkIntervalSeconds = checkIntervalSeconds
+        }
+
+        // Stores the last modified time for script files
+        Map<File, Long> lastModifiedMap = [:]
+
+        @Override
+        public void run() {
+            try {
+                log.info("Launched ScriptFileMonitorThread")
+                while (!doStop) {
+                    Map<File, Boolean> visitMap = [:]
+                    checkDirectory(visitMap, scriptRunner.scriptDirectory)
+
+                    // check to see if any scripts were deleted
+                    def toRemove = []
+                    for (File file in lastModifiedMap.keySet()) {
+                        if (!visitMap.containsKey(file)) {
+                            log.info("Detected deletion of file ${file}, instantiating new class loader")
+                            toRemove.add(file)
+                        }
+                    }
+
+                    if (toRemove.size() > 0) {
+                        for (File remove in toRemove) {
+                            if (lastModifiedMap.remove(remove) == null)
+                                log.warn("Unable to remove ${remove} from lastModifiedMap")
+                        }
+                        scriptRunner.reloadClassLoader()
+                    }
+
+                    sleep(checkIntervalSeconds * 1000)
+                }
+                log.info("ScriptFileMonitor thread is exiting")
+            }
+            catch (
+                    InterruptedException e
+                    ) {
+                log.error("ScriptFileMonitor has been interrupted and is exiting")
+            }
+        }
+
+        /**
+         * Checks the directory for changed script files and reloads the
+         * class loader if there are any.
+         */
+        void checkDirectory(Map<File, Boolean> visitMap, File directory) {
+            for (File file in directory.listFiles()) {
+                if (file.isDirectory()) {
+                    checkDirectory(visitMap, file)
+                } else if (file.isFile() && file.getName().endsWith(".groovy")) {
+                    visitMap[file] = file
+                    Long previousModification = lastModifiedMap[file]
+                    if (previousModification == null) {
+                        lastModifiedMap[file] = file.lastModified()
+                    } else if (previousModification != null && previousModification != file.lastModified()) {
+                        log.info("Detected changed for file ${file}, instantiating new class loader")
+                        scriptRunner.reloadClassLoader()
+                        lastModifiedMap[file] = file.lastModified()
+                    }
+                }
+            }
+        }
+    }
 }

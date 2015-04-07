@@ -200,6 +200,26 @@ If running in cache mode, to clear the class cache, you can call
 `scriptRunner.reloadClassLoader()`.  This will discard the class loader and
 instantiate a new one, effectively clearing out your class cache.
 
+### Automatically reloading the class loader when a script changes
+
+To automatically detect script file changes and to reload the class loader
+when a changed is detected, you can utilize the script monitor thread.  To
+launch a script monitor thread for a `scriptRunner`:
+
+```
+  scriptRunner.launchScriptFileMonitorThread(30)
+```
+
+The parameter to `launchScriptFileMonitorThread()` is the check interval in
+number of seconds.  In the above example, the thread will scan the script
+directory every 30 seconds for script file changes.
+
+To stop it when you're done with your `scriptRunner`:
+
+```
+  scriptRunner.stopScriptFileMonitorThread()
+```
+
 ### ScriptLoaderImpl 
 
 If you want more ScriptLoaders other than the default, you can add as many

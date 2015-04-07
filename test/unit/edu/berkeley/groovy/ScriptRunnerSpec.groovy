@@ -9,11 +9,15 @@ class ScriptRunnerSpec extends Specification {
 
     File scriptDirectory = new File("external-scripts/running")
     File badScriptDirectory = new File("external-scripts/bad-scripts")
+    File tmpDir = new File(System.getProperty("java.io.tmpdir") + "/scriptRunnerSpec")
 
     def setup() {
+        tmpDir.mkdir()
+        tmpDir.deleteOnExit()
     }
 
     def cleanup() {
+        tmpDir.delete()
     }
 
     void "test testScript run"() {
@@ -102,7 +106,7 @@ class ScriptRunnerSpec extends Specification {
 
     void "test recompiling changed source file, without caching"() {
         given:
-            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy")
+            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy", tmpDir)
             String scriptName = sourceFile.getName().replace(".groovy", "")
             ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(sourceFile.parentFile, false) // no script caching
         when:
@@ -116,6 +120,7 @@ class ScriptRunnerSpec extends Specification {
             println("result = $result")
         then:
             result == "run number 2"
+            scriptRunner.statistics.loaderInstantiationCount == 2
             scriptRunner.statistics.totalCompilationCount == 2
             scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 1
             scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 2
@@ -123,7 +128,7 @@ class ScriptRunnerSpec extends Specification {
 
     void "test unchanged source file, without caching"() {
         given:
-            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy")
+            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy", tmpDir)
             String scriptName = sourceFile.getName().replace(".groovy", "")
             ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(sourceFile.parentFile, false) // no script caching
         when:
@@ -136,6 +141,7 @@ class ScriptRunnerSpec extends Specification {
             println("result = $result")
         then:
             result == "run number 1"
+            scriptRunner.statistics.loaderInstantiationCount == 2
             // unchanged, but caching is disabled, so recompiled twice
             scriptRunner.statistics.totalCompilationCount == 2
             scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 1
@@ -144,7 +150,7 @@ class ScriptRunnerSpec extends Specification {
 
     void "test recompiling unchanged source file, with caching enabled"() {
         given:
-            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy")
+            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy", tmpDir)
             String scriptName = sourceFile.getName().replace(".groovy", "")
             ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(sourceFile.parentFile, true) // script caching
         when:
@@ -159,6 +165,7 @@ class ScriptRunnerSpec extends Specification {
             result == "run number 1"
             // only one compilation because the second run was unchanged
             // and cached
+            scriptRunner.statistics.loaderInstantiationCount == 1
             scriptRunner.statistics.totalCompilationCount == 1
             scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 0
             scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 1
@@ -166,7 +173,7 @@ class ScriptRunnerSpec extends Specification {
 
     void "test recompiling unchanged source file after a cache clear, with caching enabled"() {
         given:
-            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy")
+            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy", tmpDir)
             String scriptName = sourceFile.getName().replace(".groovy", "")
             ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(sourceFile.parentFile, true) // script caching
         when:
@@ -180,6 +187,7 @@ class ScriptRunnerSpec extends Specification {
             Object result = scriptRunner.runScript(scriptName)
         then:
             result == "run number 1"
+            scriptRunner.statistics.loaderInstantiationCount == 2
             // should be two compilations because we cleared the class cache
             scriptRunner.statistics.totalCompilationCount == 2
             scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 1
@@ -188,7 +196,7 @@ class ScriptRunnerSpec extends Specification {
 
     void "test recompiling changed source file, with caching enabled"() {
         given:
-            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy")
+            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy", tmpDir)
             String scriptName = sourceFile.getName().replace(".groovy", "")
             ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(sourceFile.parentFile, true) // script caching
         when:
@@ -207,9 +215,100 @@ class ScriptRunnerSpec extends Specification {
             println("result = $result")
         then:
             result == "run number 2"
+            scriptRunner.statistics.loaderInstantiationCount == 1
             scriptRunner.statistics.totalCompilationCount == 2
             // compiled once, then recompiled after the change
             scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 1
             scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 2
+    }
+
+    void "test recompiling changed source file via script monitor thread"() {
+        given:
+            File monitoredTmpDir = new File(tmpDir, "monitored")
+            monitoredTmpDir.mkdir()
+            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy", monitoredTmpDir)
+            String scriptName = sourceFile.getName().replace(".groovy", "")
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(sourceFile.parentFile, true) // script caching
+            // start the script monitor thread that will observe file changes at
+            // 1s interval
+            scriptRunner.launchScriptFileMonitorThread(1)
+        when:
+            // create a temporary source file
+            writeSource(sourceFile, "\"run number 1\"")
+            long firstRunLastModified = sourceFile.lastModified()
+            // run the script for the first time
+            assert scriptRunner.runScript(scriptName) == "run number 1"
+
+            // modify the script
+            sleep(1500) // file lastMod may only be recorded at second precision
+            writeSource(sourceFile, "\"run number 2\"")
+            long secondRunLastModified = sourceFile.lastModified()
+            assert secondRunLastModified > firstRunLastModified
+
+            // give the monitor thread some time to detect the change
+            for (int i = 0; i < 20 && scriptRunner.classLoaderInstance != null; i++) {
+                sleep(100)
+            }
+
+            // run the script again which should instantiate a new class loader
+            Object result = scriptRunner.runScript(scriptName)
+
+            // stop the monitor thread
+            scriptRunner.stopScriptFileMonitorThread()
+            // give it some time to actually stop
+            for (int i = 0; i < 20 && scriptRunner.isScriptFileMonitorThreadAlive(); i++) {
+                sleep(100)
+            }
+        then:
+            result == "run number 2"
+            // confirm the class loader has been instantiated twice
+            // which confirms the monitor thread did its job
+            scriptRunner.statistics.loaderInstantiationCount == 2
+            // confirm the monitor thread has stopped
+            scriptRunner.isScriptFileMonitorThreadAlive() == false
+            scriptRunner.statistics.totalCompilationCount == 2
+            // compiled once, then recompiled after the change
+            scriptRunner.statistics.compiledCount == 1 && scriptRunner.statistics.recompiledCount == 1
+            scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 2
+    }
+
+    void "test detection of deleted script via script monitor thread"() {
+        given:
+            File monitoredTmpDir = new File(tmpDir, "monitored")
+            monitoredTmpDir.mkdir()
+            File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy", monitoredTmpDir)
+            String scriptName = sourceFile.getName().replace(".groovy", "")
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(sourceFile.parentFile, true) // script caching
+            // start the script monitor thread that will observe file changes at
+            // 1s interval
+            scriptRunner.launchScriptFileMonitorThread(1)
+        when:
+            // create a temporary source file
+            writeSource(sourceFile, "\"run number 1\"")
+            long firstRunLastModified = sourceFile.lastModified()
+            // run the script for the first time
+            Object result = scriptRunner.runScript(scriptName)
+
+            // delete the script
+            assert sourceFile.delete()
+
+            // give the monitor thread some time to detect the deletion
+            for (int i = 0; i < 20 && scriptRunner.classLoaderInstance != null; i++) {
+                sleep(100)
+            }
+
+            // stop the monitor thread
+            scriptRunner.stopScriptFileMonitorThread()
+            // give it some time to actually stop
+            for (int i = 0; i < 20 && scriptRunner.isScriptFileMonitorThreadAlive(); i++) {
+                sleep(100)
+            }
+        then:
+            result == "run number 1"
+            // confirm the class loader has been instantiated twice
+            // which confirms the monitor thread did its job
+            scriptRunner.statistics.loaderInstantiationCount == 2
+            // confirm the monitor thread has stopped
+            scriptRunner.isScriptFileMonitorThreadAlive() == false
     }
 }
