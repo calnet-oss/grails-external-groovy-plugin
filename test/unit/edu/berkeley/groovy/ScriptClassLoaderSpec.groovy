@@ -49,16 +49,16 @@ class ScriptClassLoaderSpec extends Specification {
             for (i = 0; i < 10000; i++) {
                 new ScriptClassLoader(stats, false)
                 //if(i % 1000 == 0)
-                //  System.out.println(stats.getLoadedCount() + ", " + stats.getUnloadedCount())
-                if (stats.unloadedCount > 0)
+                //  System.out.println(stats.loaderInstantiationCount + ", " + stats.loaderFinalizationCount)
+                if (stats.loaderFinalizationCount > 0)
                     break
                 if (i % 1000 == 0) {
                     //System.out.println("GCing")
                     System.gc()
                 }
             }
-            println("took $i iterations, ${stats.loadedCount} loaded, ${stats.unloadedCount} unloaded")
+            println("took $i iterations, ${stats.loaderInstantiationCount} loaded, ${stats.loaderFinalizationCount} unloaded")
         then:
-            stats.unloadedCount > 0
+            stats.loaderFinalizationCount > 0
     }
 }

@@ -26,16 +26,16 @@ class ScriptRunnerUnloadingSpec extends Specification {
             for (i = 0; i < 10000; i++) {
                 scriptRunner.runScript("test") // run test.groovy script
                 //if(i % 1000 == 0)
-                //  System.out.println(scriptRunner.statistics.getLoadedCount() + ", " + scriptRunner.statistics.getUnloadedCount())
-                if (scriptRunner.statistics.unloadedCount > 0)
+                //  System.out.println(scriptRunner.statistics.loaderInstantiationCount + ", " + scriptRunner.statistics.loaderFinalizationCount)
+                if (scriptRunner.statistics.loaderFinalizationCount > 0)
                     break
                 if (i % 1000 == 0) {
                     //System.out.println("GCing")
                     System.gc()
                 }
             }
-            println("took $i iterations, ${scriptRunner.statistics.loadedCount} loaded, ${scriptRunner.statistics.unloadedCount} unloaded")
+            println("took $i iterations, ${scriptRunner.statistics.loaderInstantiationCount} loaded, ${scriptRunner.statistics.loaderFinalizationCount} unloaded")
         then:
-            scriptRunner.statistics.unloadedCount > 0
+            scriptRunner.statistics.loaderFinalizationCount > 0
     }
 }

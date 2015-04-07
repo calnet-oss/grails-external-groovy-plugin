@@ -1,18 +1,18 @@
 package edu.berkeley.groovy
 
 class StatisticsImpl implements Statistics {
-    private volatile long loadedCount // tracks ScriptClassLoader instantiations
-    private volatile long unloadedCount // tracks ScriptClassLoader finalizations
+    private volatile long loaderInstantiationCount // tracks ScriptClassLoader instantiations
+    private volatile long loaderFinalizationCount // tracks ScriptClassLoader finalizations
     private volatile long compiledCount // compiled for the first time
     private volatile long recompiledCount // recompiled
     private Map<Integer, Long> compileCountMap = [:] // tracks total compilations for a class name
 
     synchronized void signalClassLoaderLoad() {
-        loadedCount++
+        loaderInstantiationCount++
     }
 
     synchronized void signalClassLoaderUnload() {
-        unloadedCount++
+        loaderFinalizationCount++
     }
 
     synchronized void signalCompiled(String className) {
@@ -27,12 +27,12 @@ class StatisticsImpl implements Statistics {
         incrementTotalCompilationCountForClass(key)
     }
 
-    synchronized long getLoadedCount() {
-        return loadedCount
+    synchronized long getLoaderInstantiationCount() {
+        return loaderInstantiationCount
     }
 
-    synchronized long getUnloadedCount() {
-        return unloadedCount
+    synchronized long getLoaderFinalizationCount() {
+        return loaderFinalizationCount
     }
 
     synchronized long getCompiledCount() {
