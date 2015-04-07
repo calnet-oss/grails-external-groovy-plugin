@@ -49,8 +49,6 @@ class ScriptRunnerSpec extends Specification {
             Object result = scriptRunner.runScript("testLogInstance")
         then:
             result != null
-            // results come back as Strings
-            result.startsWith("org.codehaus.groovy.tools.shell.util.Logger")
     }
 
     private void writeSource(File sourceFile, String source) throws IOException {
