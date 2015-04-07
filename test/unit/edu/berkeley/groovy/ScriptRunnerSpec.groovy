@@ -33,6 +33,15 @@ class ScriptRunnerSpec extends Specification {
             result == "hello world"
     }
 
+    void "test script in a package"() {
+        given:
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(scriptDirectory)
+        when:
+            Object result = scriptRunner.runScript("mypackage.testPackageScript")
+        then:
+            result == "this class running in mypackage"
+    }
+
     void "test caller injected property"() {
         given:
             ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(scriptDirectory)
@@ -49,6 +58,26 @@ class ScriptRunnerSpec extends Specification {
             Object result = scriptRunner.runScript("testLogInstance")
         then:
             result != null
+    }
+
+    void "test script with a package name mismatched to its directory"() {
+        given:
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File("external-scripts/bad-scripts"))
+        when:
+            Object result = scriptRunner.runScript("mypackage.badPackageScript")
+        then:
+            Exception e = thrown()
+            println(e)
+    }
+
+    void "test script with a missing package name"() {
+        given:
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File("external-scripts/bad-scripts"))
+        when:
+            Object result = scriptRunner.runScript("mypackage.missingPackageScript")
+        then:
+            Exception e = thrown()
+            println(e)
     }
 
     private void writeSource(File sourceFile, String source) throws IOException {

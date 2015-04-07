@@ -91,6 +91,9 @@ class ScriptClassLoader extends GroovyClassLoader {
         if (isDebugEnabled)
             log.debug("parseClass() for ${codeSource.name}, isCachable=${codeSource.isCachable()}: shouldCacheSource=$shouldCacheSource")
         Class cls = super.parseClass(codeSource, shouldCacheSource)
+        // verify this script file is in the right directory for the package
+        // (a runtime exception will be thrown if it isn't)
+        checkPackageName(codeSource, cls)
         // increment the compile count
         stats.signalCompiled(cls.name)
         return cls
@@ -175,5 +178,43 @@ class ScriptClassLoader extends GroovyClassLoader {
         catch (Exception e) {
             isDebugEnabled = false
         }
+    }
+
+    /**
+     * Verify the class package name matches up with the directory of the script.
+     */
+    protected void checkPackageName(GroovyCodeSource codeSource, Class cls) {
+        // can only check if this class came from a script file
+        if (codeSource.file != null && codeSource.file.parentFile != null) {
+            // get the classpath directory that contains this source fole
+            File classpathLocation = getClasspathLocation(codeSource.file)
+            if (classpathLocation == null)
+                throw new RuntimeException("Couldn't get classpath location for ${codeSoure.file}")
+
+            // The expected directory is the classpath locaion plus the
+            // package name with dots converted to a File.separator
+            // character.
+            File expectedDirectory = (cls.package != null ? new File(classpathLocation, cls.package.name.replace('.' as char, '/' as char)) : classpathLocation)
+
+            // If the script file is in a location that doesn't match its
+            // package, then throw an exception.
+            if (codeSource.file.parentFile != expectedDirectory)
+                throw new RuntimeException("The package name in ${codeSource.file}, which is \"${(cls.package != null ? cls.package.name : '')}\", needs to be placed in a directory matching the package name: i.e., ${expectedDirectory}")
+        }
+    }
+
+    /**
+     * Get the class loader URL for the source file.
+     */
+    protected File getClasspathLocation(File file) {
+        for (URL url in getURLs()) {
+            URI uri = url.toURI()
+            if (uri.getScheme() == "file") {
+                if (file.getPath().startsWith(uri.getPath())) {
+                    return new File(uri)
+                }
+            }
+        }
+        return null
     }
 }
