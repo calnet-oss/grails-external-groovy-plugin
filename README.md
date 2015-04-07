@@ -250,7 +250,7 @@ instantiate a new one, effectively clearing out your class cache.
 ### Automatically reloading the class loader when a script changes
 
 To automatically detect script file changes and to reload the class loader
-when a changed is detected, you can utilize the script monitor thread.  To
+when a change is detected, you can utilize the script monitor thread.  To
 launch a script monitor thread for a `scriptRunner`:
 
 ```
