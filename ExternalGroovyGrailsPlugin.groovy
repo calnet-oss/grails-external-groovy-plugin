@@ -1,3 +1,5 @@
+import edu.berkeley.groovy.ScriptRunnerImpl
+
 class ExternalGroovyGrailsPlugin {
     def group = "edu.berkeley.calnet.plugins"
 
@@ -7,9 +9,9 @@ class ExternalGroovyGrailsPlugin {
     def grailsVersion = "2.4 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
-        "grails-app/domain/**",
-        "grails-app/controllers/**"
+            "grails-app/views/error.gsp",
+            "grails-app/domain/**",
+            "grails-app/controllers/**"
     ]
 
     // TODO Fill in these fields
@@ -45,7 +47,29 @@ Execute external Groovy scripts from Grails.
     }
 
     def doWithSpring = {
-        // TODO Implement runtime spring config (optional)
+        /**
+         * In config:
+         *
+         * If externalGroovy.defaultScriptDirectory set, use that
+         *    otherwise default to ./external-scripts
+         *
+         * If externalGroovy.cacheScripts set, use that
+         *    otherwise default to true
+         *
+         * If externalGroovy.launchScriptFileMonitorThread set, use that
+         *    otherwise default to false
+         *
+         * If externalGroovy.scriptFileMonitorThreadIntervalSeconds, use that
+         *    otherwise default to 30 seconds
+         */
+        def eg = (application.config?.externalGroovy ?: [:])
+        scriptRunner(
+                ScriptRunnerImpl,
+                new File(eg?.defaultScriptDirectory ?: "external-scripts"),
+                eg?.cacheScripts != null ?: true,
+                eg?.launchScriptFileMonitorThread,
+                eg?.scriptFileMonitorThreadIntervalSeconds ?: 30
+        )
     }
 
     def doWithDynamicMethods = { ctx ->
