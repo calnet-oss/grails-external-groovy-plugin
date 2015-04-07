@@ -62,12 +62,13 @@ Execute external Groovy scripts from Grails.
          * If externalGroovy.scriptFileMonitorThreadIntervalSeconds, use that
          *    otherwise default to 30 seconds
          */
+        def eg = (application.config?.externalGroovy ?: [:])
         scriptRunner(
                 ScriptRunnerImpl,
-                (application.config?.externalGroovy?.containsKey("defaultScriptDirectory") ? new File(application.config.externalGroovy.defaultScriptDirectory) : new File("external-scripts")),
-                (application.config?.externalGroovy?.containsKey("cacheScripts") ? application.config.externalGroovy.cacheScripts : true),
-                (application.config?.externalGroovy?.containsKey("launchScriptFileMonitorThread") ? application.config.externalGroovy.launchScriptFileMonitorThread : false),
-                (application.config?.externalGroovy?.containsKey("scriptFileMonitorThreadIntervalSeconds") ? application.config.externalGroovy.scriptFileMonitorThreadIntervalSeconds : 30)
+                new File(eg?.defaultScriptDirectory ?: "external-scripts"),
+                eg?.cacheScripts != null ?: true,
+                eg?.launchScriptFileMonitorThread,
+                eg?.scriptFileMonitorThreadIntervalSeconds ?: 30
         )
     }
 
