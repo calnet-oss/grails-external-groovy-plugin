@@ -203,8 +203,8 @@ your grails application directory.
 import edu.berkeley.groovy.ScriptRunnerImpl
 ```
 ```
-scriptRunner2(ScriptRunnerImpl, application.config?.externalGroovy?.scriptDirectory2)
-scriptRunner3(ScriptRunnerImpl, application.config?.externalGroovy?.scriptDirectory3)
+scriptRunner2(ScriptRunnerImpl, new File(application.config?.externalGroovy?.scriptDirectory2))
+scriptRunner3(ScriptRunnerImpl, new File(application.config?.externalGroovy?.scriptDirectory3))
 ```
 
 There a few other other parameters you can pass to a `ScriptRunnerImpl`
@@ -214,7 +214,7 @@ In `resources.groovy`, you can instantiate a bean using all the options using
 the map constructor:
 ```
 scriptRunner4(ScriptRunnerImpl, [
-  scriptDirectory: application.config?.externalGroovy?.scriptDirectory4,
+  scriptDirectory: new File(application.config?.externalGroovy?.scriptDirectory4),
   bootstrapScriptFile: "external-scripts/bootstrap/Bootstrap.groovy",
   parentClassLoader: null
 ])
