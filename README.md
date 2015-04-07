@@ -79,7 +79,7 @@ What you see above are the default settings for the bean.  To overide the
 default, place the overrides in your `Config.groovy`.
 
 The above settings are described in greater detail in different sections
-below, but here's quick summary:
+below, but here's a quick summary:
 
  * `defaultScriptDirectory` - The directory containing your external scripts.
 
