@@ -41,15 +41,15 @@ class ScriptRunnerImpl implements ScriptRunner {
     private ScriptClassLoader classLoaderInstance
 
     /**
-     * The script will run using default Bootstrap code and without caching
-     * script classes.
+     * The script will run using default Bootstrap code and with caching
+     * of script classes.
      */
     ScriptRunnerImpl(File scriptDirectory) {
-        this(null, scriptDirectory, false)
+        this(null, scriptDirectory, true)
     }
 
     ScriptRunnerImpl(String scriptDirectory) {
-        this(null, new File(scriptDirectory), false)
+        this(null, new File(scriptDirectory), true)
     }
 
     /**
@@ -93,6 +93,8 @@ class ScriptRunnerImpl implements ScriptRunner {
             this.grailsApplication = map.grailsApplication
         if (map.containsKey("cacheUnmodifiedScripts"))
             this.cacheUnmodifiedScripts = map.cacheUnmodifiedScripts
+        else
+            this.cacheUnmodifiedScripts = true // default behavior is to cache
         validateConstruction()
     }
 

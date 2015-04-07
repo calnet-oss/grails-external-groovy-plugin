@@ -15,7 +15,7 @@ class ScriptRunnerUnloadingSpec extends Specification {
 
     void "test script unloading"() {
         given:
-            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File("external-scripts/unloading"))
+            ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File("external-scripts/unloading"), false)
         when:
             /**
              * See the comments in ScriptClassLoaderSpec.groovy as we are

@@ -157,9 +157,9 @@ This example will print out `my test property` to the console.
 
 ### Caching script files but still recompiling them when they change
 
-To cache script files so that the class loader doesn't recompile them every
-time a `runScript()` is called, instantiate a `ScriptRunnerImpl` with
-`cacheUnmodifiedScripts=true`.
+The caching of script files so that the class loader doesn't recompile them
+every time a `runScript()` is called is the default behavior or when
+`cacheUnmodifiedScripts=true` is passed to the constructor.
 
 Example:
 ```
@@ -170,12 +170,29 @@ scriptRunner.runScript("hello") // will use cached hello class
 scriptRunner.runScript("hello") // will recompile hello.groovy because it changed
 ```
 
-You can look at `scriptRunner.statistics.compileCount` to verify that the
-`compileCount` is 2 for the above example.
+You can look at `scriptRunner.statistics.totalCompilationCount` to verify
+that the `totalCompilationCount` is 2 for the above example.
 
-This will be because the `compileCount` increments for the first
+This will be because the total compilation count increments for the first
 `runScript()`, doesn't for the second (it's cached) and does for the third
 (it recompiles due to modification).
+
+To turn class caching off, instantiate a `ScriptRunnerImpl` with
+`cacheUnmodifiedScripts=false`.
+
+Example:
+```
+ScriptRunner scriptRunner = new ScriptRunnerImpl(scriptDirectory, false)
+scriptRunner.runScript("hello") // will compile hello.groovy
+scriptRunner.runScript("hello") // will recompile hello.groovy
+// go and modify hello.groovy
+scriptRunner.runScript("hello") // will recompile hello.groovy
+```
+
+You can look at `scriptRunner.statistics.totalCompilationCount` to verify
+that the `totalCompilationCount` is 3 for the above example.  Each
+runScript() results in a compilation regardless of whether the script file
+has changed or not.
 
 ### ScriptLoaderImpl 
 
@@ -215,7 +232,7 @@ the map constructor:
 ```
 scriptRunner4(ScriptRunnerImpl, [
   scriptDirectory: application.config?.externalGroovy?.scriptDirectory4,
-  bootstrapScriptFile: "external-scripts/bootstrap/Bootstrap.groovy",
+  bootstrapScriptFile: new File("external-scripts/bootstrap/Bootstrap.groovy"),
   parentClassLoader: null
 ])
 ```
@@ -223,7 +240,7 @@ scriptRunner4(ScriptRunnerImpl, [
 In addition to `scriptDirectory`, there is:
 
  * `bootstrapScriptFile` - If you want to override the default bootstrap
-   code, you can provide the path to your own Bootstrap.groovy file.
+   code, you can provide the `File` to your own Bootstrap.groovy file.
 
  * `parentClassLoader` - By default, the script's class loader will have the
    Grails class loader as its parent class loader.  This means scripts can
