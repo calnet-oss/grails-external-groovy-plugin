@@ -104,7 +104,7 @@ instantiate the default Spring bean, but if you instantiate your own
 `ScriptRunnerImpl`, these config settings have no effect unless you pass
 them as parameters to the `ScriptRunnerImpl` constructor.  You can see this
 in action in the `doWithSpring` closure in
-[ExternalGroovyGrailsPlugin.groovy].
+[ExternalGroovyGrailsPlugin.groovy](ExternalGroovyGrailsPlugin.groovy).
 
 ### Running with classes
 
