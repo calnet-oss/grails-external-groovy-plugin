@@ -51,9 +51,10 @@ Execute external Groovy scripts from Grails.
          * In config:
          *
          * If externalGroovy.defaultScriptDirectory set, use that
-         *   otherwise default to ./external-scripts
+         *    otherwise default to ./external-scripts
          *
-         * Default to script caching turned on.
+         * If externalGroovy.cacheScripts set, use that
+         *    otherwise default to true
          *
          * If externalGroovy.launchScriptFileMonitorThread set, use that
          *    otherwise default to false
@@ -64,7 +65,7 @@ Execute external Groovy scripts from Grails.
         scriptRunner(
                 ScriptRunnerImpl,
                 (application.config?.externalGroovy?.containsKey("defaultScriptDirectory") ? new File(application.config.externalGroovy.defaultScriptDirectory) : new File("external-scripts")),
-                true, // script caching
+                (application.config?.externalGroovy?.containsKey("cacheScripts") ? application.config.externalGroovy.cacheScripts : true),
                 (application.config?.externalGroovy?.containsKey("launchScriptFileMonitorThread") ? application.config.externalGroovy.launchScriptFileMonitorThread : false),
                 (application.config?.externalGroovy?.containsKey("scriptFileMonitorThreadIntervalSeconds") ? application.config.externalGroovy.scriptFileMonitorThreadIntervalSeconds : 30)
         )
