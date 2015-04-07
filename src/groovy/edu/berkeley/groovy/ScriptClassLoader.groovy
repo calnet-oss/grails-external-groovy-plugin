@@ -198,8 +198,8 @@ class ScriptClassLoader extends GroovyClassLoader {
 
             // If the script file is in a location that doesn't match its
             // package, then throw an exception.
-            if (codeSource.file.parentFile != expectedDirectory)
-                throw new RuntimeException("The package name in ${codeSource.file}, which is \"${(cls.package != null ? cls.package.name : '')}\", needs to be placed in a directory matching the package name: i.e., ${expectedDirectory}")
+            if (codeSource.file.parentFile.canonicalPath != expectedDirectory.canonicalPath)
+                throw new RuntimeException("The package name in ${codeSource.file.canonicalPath}, which is \"${(cls.package != null ? cls.package.name : '')}\", needs to be placed in a directory matching the package name: i.e., ${expectedDirectory.canonicalPath}")
         }
     }
 
