@@ -67,8 +67,8 @@ Execute external Groovy scripts from Grails.
                 ScriptRunnerImpl,
                 new File(eg?.defaultScriptDirectory ?: "external-scripts"),
                 eg?.cacheScripts != null ?: true,
-                eg?.launchScriptFileMonitorThread,
-                eg?.scriptFileMonitorThreadIntervalSeconds ?: 30
+                eg?.launchScriptFileMonitorThread as Boolean,
+                (eg?.scriptFileMonitorThreadIntervalSeconds ?: 30) as Integer
         )
     }
 
