@@ -4,7 +4,7 @@ class ExternalGroovyGrailsPlugin {
     def group = "edu.berkeley.calnet.plugins"
 
     // the plugin version
-    def version = "0.1-SNAPSHOT"
+    def version = "0.2-SNAPSHOT"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.4 > *"
     // resources that are excluded from plugin packaging
@@ -13,6 +13,14 @@ class ExternalGroovyGrailsPlugin {
             "grails-app/domain/**",
             "grails-app/controllers/**"
     ]
+
+    // Any settings plugins should load before "dataSource".  By telling
+    // this plugin to load after the dataSource plugin, then we are making
+    // sure we load this plugin after any settings plugins.  We want
+    // settings to load before this plugin so that we have certain settings,
+    // like the script directory location, loaded before this plugin
+    // initializes.
+    def loadAfter = ["dataSource"]
 
     // TODO Fill in these fields
     def title = "External Groovy Plugin" // Headline display name of the plugin
@@ -63,6 +71,7 @@ Execute external Groovy scripts from Grails.
          *    otherwise default to 30 seconds
          */
         def eg = (application.config?.externalGroovy ?: [:])
+        log.debug("Instantiating scriptRunner with config: ${eg}")
         scriptRunner(
                 ScriptRunnerImpl,
                 new File(eg?.defaultScriptDirectory ?: "external-scripts"),
