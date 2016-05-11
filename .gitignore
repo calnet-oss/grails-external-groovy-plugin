@@ -1,5 +1,6 @@
 plugin.xml
-target
+build
+buildPlugins
 .idea
 *.iml
 *.ipr
@@ -9,3 +10,5 @@ atlassian-ide-plugin.xml
 .project
 *.zip
 *.sha1
+.gradle
+out
