@@ -1,5 +1,5 @@
-External Groovy Script Plugin
-=============================
+External Groovy Script Plugin for Grails
+========================================
 
 This Grails plugin gives you the feature of running external Groovy scripts
 using a class loader that can be garbage collected once the script is no
@@ -37,7 +37,7 @@ println("hello world")
 
 Add an import to your application code:
 ```
-import edu.berkeley.groovy.ScriptRunner
+import edu.berkeley.calnet.groovy.ScriptRunner
 ```
 
 The plugin will inject a `scriptRunner` instance for you, so declare a
@@ -293,7 +293,7 @@ your grails application directory.
 
 `resources.groovy`:
 ```
-import edu.berkeley.groovy.ScriptRunnerImpl
+import edu.berkeley.calnet.groovy.ScriptRunnerImpl
 ```
 ```
 scriptRunner2(ScriptRunnerImpl, application.config.externalGroovy.scriptDirectory2)
@@ -408,7 +408,7 @@ rid of this separate "PermGen" space.  See
 [Where Has the Java PermGen Gone?](http://www.infoq.com/articles/Java-PERMGEN-Removed).
 
 If you are using this plugin, modify external scripts a lot, and see
-OutOfMemory PermGen exceptions thrown after running for awhile, then the
+`OutOfMemory` PermGen exceptions thrown after running for awhile, then the
 script class loaders probably aren't getting garbage collected.  (In Java
 8's case and above, you won't see PermGen exceptions, but will still see
 some kind of OutOfMemory exception if you fill up the space with unloaded
@@ -465,12 +465,12 @@ A `jhat` web server starts listening on port 7000.
 
 Go to http://localhost:7000/
 
-Find the link for `class edu.berkeley.groovy.ScriptClassLoader`.
+Find the link for `class edu.berkeley.calnet.groovy.ScriptClassLoader`.
 
 On that page, under the **Instances** heading, click the `Include
 subclasses` link.
 
-Choose one of the `edu.berkeley.groovy.ScriptClassLoader` instances that you
+Choose one of the `edu.berkeley.calnet.groovy.ScriptClassLoader` instances that you
 know should not be hanging around anymore (if you see none, perhaps you have
 a memory problem unrelated to this plugin).
 
@@ -490,7 +490,7 @@ Static reference from java.lang.UNIXProcess$ProcessReaperThreadFactory.group (fr
 --> NeverEndingThread@0xfab6b908 (163 bytes) (??:)
 --> class NeverEndingThread (112 bytes) (??:)
 --> groovy.lang.GroovyClassLoader$InnerLoader@0xfab73448 (194 bytes) (field parent:)
---> edu.berkeley.groovy.ScriptClassLoader@0xfab14138 (202 bytes) 
+--> edu.berkeley.calnet.groovy.ScriptClassLoader@0xfab14138 (202 bytes) 
 ```
 
 This shiows me there's a thread instance, `NeverEndingThread@0xfab6b908`,

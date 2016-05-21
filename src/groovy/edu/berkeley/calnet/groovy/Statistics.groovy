@@ -24,19 +24,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.berkeley.groovy.test
+package edu.berkeley.calnet.groovy
 
-import edu.berkeley.groovy.ScriptRunner
+interface Statistics {
+    void signalClassLoaderLoad()
 
-class TestService {
+    void signalClassLoaderUnload()
 
-    // used by testGrailsApplicationScript.groovy
-    static final String GRAILS_APPLICATION_SET = "grailsApplication is set"
-    static final String GRAILS_APPLICATION_NOT_SET = "grailsApplication is not set"
-
-    ScriptRunner scriptRunner // injected
-
-    String runScript(String scriptName) {
-        return scriptRunner.runScript(scriptName)
-    }
+    void signalCompiled(String className)
 }

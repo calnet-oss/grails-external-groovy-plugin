@@ -48,12 +48,12 @@ log4j = {
             'org.springframework',
             'org.hibernate',
             'net.sf.ehcache.hibernate'
-    info 'edu.berkeley.groovy'
+    info 'edu.berkeley.calnet.groovy'
 }
 
 externalGroovy {
     defaultScriptDirectory = "external-scripts/running"
     cacheScripts = true
     launchScriptFileMonitorThread = false
-    //scriptFileMonitorThreadIntervalSeconds = 35
+    //scriptFileMonitorThreadIntervalSeconds = 30
 }

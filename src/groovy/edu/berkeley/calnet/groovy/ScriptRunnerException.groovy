@@ -24,12 +24,10 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.berkeley.groovy
+package edu.berkeley.calnet.groovy
 
-interface Statistics {
-    void signalClassLoaderLoad()
+import groovy.transform.InheritConstructors
 
-    void signalClassLoaderUnload()
-
-    void signalCompiled(String className)
+@InheritConstructors
+class ScriptRunnerException extends Exception {
 }

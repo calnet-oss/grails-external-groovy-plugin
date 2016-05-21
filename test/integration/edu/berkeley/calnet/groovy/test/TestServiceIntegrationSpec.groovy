@@ -24,10 +24,18 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.berkeley.groovy
+package edu.berkeley.calnet.groovy.test
 
-import groovy.transform.InheritConstructors
+import grails.test.spock.IntegrationSpec
 
-@InheritConstructors
-class ScriptClassLoaderException extends RuntimeException {
+class TestServiceIntegrationSpec extends IntegrationSpec {
+
+    def testService
+
+    void "test runScript service and grailsApplication injection"() {
+        when:
+        String result = testService.runScript("testGrailsApplicationScript")
+        then:
+        result == TestService.GRAILS_APPLICATION_SET
+    }
 }

@@ -24,18 +24,19 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.berkeley.groovy.test
+package edu.berkeley.calnet.groovy.test
 
-import grails.test.spock.IntegrationSpec
+import edu.berkeley.calnet.groovy.ScriptRunner
 
-class TestServiceIntegrationSpec extends IntegrationSpec {
+class TestService {
 
-    def testService
+    // used by testGrailsApplicationScript.groovy
+    static final String GRAILS_APPLICATION_SET = "grailsApplication is set"
+    static final String GRAILS_APPLICATION_NOT_SET = "grailsApplication is not set"
 
-    void "test runScript service and grailsApplication injection"() {
-        when:
-        String result = testService.runScript("testGrailsApplicationScript")
-        then:
-        result == TestService.GRAILS_APPLICATION_SET
+    ScriptRunner scriptRunner // injected
+
+    String runScript(String scriptName) {
+        return scriptRunner.runScript(scriptName)
     }
 }

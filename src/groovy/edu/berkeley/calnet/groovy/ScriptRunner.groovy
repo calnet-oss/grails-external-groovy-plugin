@@ -24,10 +24,10 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.berkeley.groovy
+package edu.berkeley.calnet.groovy
 
-import groovy.transform.InheritConstructors
+interface ScriptRunner {
+    public Object runScript(String className, Map<String, Object> propertyInjections) throws ScriptRunnerException
 
-@InheritConstructors
-class ScriptRunnerException extends Exception {
+    public Statistics getStatistics()
 }

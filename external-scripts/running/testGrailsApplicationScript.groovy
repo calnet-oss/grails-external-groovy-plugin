@@ -24,7 +24,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import edu.berkeley.groovy.test.TestService
+import edu.berkeley.calnet.groovy.test.TestService
 
 boolean isSet
 try {
