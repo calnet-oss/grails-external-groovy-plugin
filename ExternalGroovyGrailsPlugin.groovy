@@ -37,7 +37,8 @@ class ExternalGroovyGrailsPlugin {
     def pluginExcludes = [
             "grails-app/views/error.gsp",
             "grails-app/domain/**",
-            "grails-app/controllers/**"
+            "grails-app/controllers/**",
+            "grails-app/services/**"
     ]
 
     // Any settings plugins should load before "dataSource".  By telling
