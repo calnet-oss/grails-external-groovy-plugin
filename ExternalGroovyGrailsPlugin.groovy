@@ -24,13 +24,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import edu.berkeley.groovy.ScriptRunnerImpl
+import edu.berkeley.calnet.groovy.ScriptRunnerImpl
 
 class ExternalGroovyGrailsPlugin {
     def group = "edu.berkeley.calnet.plugins"
 
     // the plugin version
-    def version = "0.3-SNAPSHOT"
+    def version = "1.0-SNAPSHOT"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.4 > *"
     // resources that are excluded from plugin packaging
