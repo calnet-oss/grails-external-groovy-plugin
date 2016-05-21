@@ -57,7 +57,7 @@ Execute external Groovy scripts from Grails.
 '''
 
     // URL to the plugin's documentation
-    //def documentation = "http://grails.org/plugin/external-groovy"
+    def documentation = "https://github.com/calnet-oss/grails-external-groovy-plugin/blob/master/README.md"
 
     // Extra (optional) plugin metadata
 
@@ -70,10 +70,10 @@ Execute external Groovy scripts from Grails.
 //    def developers = [ [ name: "Joe Bloggs", email: "joe@bloggs.net" ]]
 
     // Location of the plugin's issue tracker.
-//    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
+    def issueManagement = [ system: "GitHub", url: "https://github.com/calnet-oss/grails-external-groovy-plugin/issues" ]
 
     // Online location of the plugin's browseable source code.
-//    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
+    def scm = [ url: "https://github.com/calnet-oss/grails-external-groovy-plugin" ]
 
     def doWithWebDescriptor = { xml ->
     }

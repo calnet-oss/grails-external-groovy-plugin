@@ -137,10 +137,8 @@ if (project.hasProperty('default_bintray_user')) {
             name = 'grails-external-groovy-plugin'
             desc = 'Run external Groovy scripts from Grails'
             licenses = ['BSD']
-            // TODO
-            //vcsUrl = ''
-            // TODO
-            //issueTrackerUrl = ''
+            vcsUrl = 'https://github.com/calnet-oss/grails-external-groovy-plugin'
+            issueTrackerUrl = 'https://github.com/calnet-oss/grails-external-groovy-plugin/issues'
             version {
                 name = project.version
                 desc = "$name v${project.version}- $desc"
