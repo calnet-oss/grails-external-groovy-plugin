@@ -27,11 +27,16 @@
 buildscript {
     repositories {
         mavenLocal()
-        maven {
-            url 'https://maven.calnet.berkeley.edu/artifactory/all/'
-            credentials {
-                username calnet_deploy_user
-                password calnet_deploy_password
+        // If using a Maven proxy, put the property settings in
+        // ~/.gradle/gradle.properties for default_proxy_url,
+        // default_proxy_username and default_proxy_password.
+        if (project.hasProperty("default_proxy_url")) {
+            maven {
+                url project.property("default_proxy_url")
+                credentials {
+                    username project.property("default_proxy_username")
+                    password project.property("default_proxy_password")
+                }
             }
         }
         jcenter()
@@ -47,9 +52,10 @@ apply plugin: 'grails'
 apply plugin: 'project-report'
 apply plugin: "io.spring.dependency-management"
 apply plugin: 'maven-publish'
+//apply plugin: 'com.jfrog.bintray'
 
 group = 'edu.berkeley.calnet.grails.plugins'
-version = '0.3-SNAPSHOT'
+version = '1.0-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -61,11 +67,16 @@ grails {
 
 repositories {
     mavenLocal()
-    maven {
-        url 'https://maven.calnet.berkeley.edu/artifactory/all/'
-        credentials {
-            username calnet_deploy_user
-            password calnet_deploy_password
+    // If using a Maven proxy, put the property settings in
+    // ~/.gradle/gradle.properties for default_proxy_url,
+    // default_proxy_username and default_proxy_password.
+    if (project.hasProperty("default_proxy_url")) {
+        maven {
+            url project.property("default_proxy_url")
+            credentials {
+                username project.property("default_proxy_username")
+                password project.property("default_proxy_password")
+            }
         }
     }
     jcenter()
@@ -74,8 +85,8 @@ repositories {
 }
 
 test {
-    // We'd like memory to be low for the tests so we can trigger GC for class
-    // unloading checking
+    // We'd like memory to be low for the tests so we can trigger GC for
+    // class unloading checking
     jvmOptions {
         maxHeapSize = "92m"
     }
@@ -110,3 +121,32 @@ publishing {
         }
     }
 }
+
+/*
+if (project.hasProperty('default_bintray_user')) {
+    bintray {
+        // put in ~/.gradle/gradle.properties
+        user = project.property('default_bintray_user')
+        key = project.property('default_bintray_api_key')
+        publications = ['mavenJava']
+
+        //dryRun = true
+
+        pkg {
+            repo = 'maven'
+            name = 'grails-external-groovy-plugin'
+            desc = 'Run external Groovy scripts from Grails'
+            licenses = ['BSD']
+            // TODO
+            //vcsUrl = ''
+            // TODO
+            //issueTrackerUrl = ''
+            version {
+                name = project.version
+                desc = "$name v${project.version}- $desc"
+                released = new Date()
+            }
+        }
+    }
+}
+*/
