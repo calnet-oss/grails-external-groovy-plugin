@@ -115,13 +115,16 @@ dependencies {
      *****************************************************************/
 }
 
+// publishing with './gradlew publish'
+publish.dependsOn assemble
 publishing {
     publications {
         maven(MavenPublication) {
+            artifactId "external-groovy"
+            artifact("${project.name}-${project.version}.zip")
         }
     }
 
-    // publishing with './gradlew publish'
     repositories {
         maven {
             // Put the property settings in ~/.gradle/gradle.properties for
@@ -148,7 +151,7 @@ if (project.hasProperty('default_bintray_user')) {
 
         pkg {
             repo = 'maven'
-            name = 'grails-external-groovy-plugin'
+            name = project.name
             desc = 'Run external Groovy scripts from Grails'
             licenses = ['BSD']
             vcsUrl = 'https://github.com/calnet-oss/grails-external-groovy-plugin'
