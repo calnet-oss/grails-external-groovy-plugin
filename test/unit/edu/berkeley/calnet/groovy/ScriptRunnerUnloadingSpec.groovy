@@ -28,11 +28,13 @@ package edu.berkeley.calnet.groovy
 
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
+import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 import java.nio.ByteBuffer
 
 @TestMixin(GrailsUnitTestMixin)
+@Slf4j(value = "LOG")
 class ScriptRunnerUnloadingSpec extends Specification {
     void "test script unloading"() {
         given:
@@ -54,6 +56,7 @@ class ScriptRunnerUnloadingSpec extends Specification {
             catch (OutOfMemoryError e) {
                 allocations = null
                 System.gc()
+                LOG.info("Cleaned up after an expected and wanted out of memory error.")
                 break
             }
             //if(i % 100 == 0)
@@ -61,7 +64,7 @@ class ScriptRunnerUnloadingSpec extends Specification {
             if (scriptRunner.statistics.loaderFinalizationCount > 0)
                 break
         }
-        println("took $i iterations, ${scriptRunner.statistics.loaderInstantiationCount} loaded, ${scriptRunner.statistics.loaderFinalizationCount} unloaded")
+        LOG.info("took $i iterations, ${scriptRunner.statistics.loaderInstantiationCount} loaded, ${scriptRunner.statistics.loaderFinalizationCount} unloaded")
         then:
         scriptRunner.statistics.loaderFinalizationCount > 0
     }
