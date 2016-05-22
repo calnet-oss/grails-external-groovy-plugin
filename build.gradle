@@ -55,7 +55,7 @@ apply plugin: 'maven-publish'
 //apply plugin: 'com.jfrog.bintray'
 
 group = 'edu.berkeley.calnet.grails.plugins'
-version = '1.0-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
+version = '1.0.0-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
