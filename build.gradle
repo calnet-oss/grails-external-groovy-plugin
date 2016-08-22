@@ -45,14 +45,15 @@ buildscript {
     dependencies {
         classpath "io.spring.gradle:dependency-management-plugin:${spring_depmgmt_version}"
         classpath "org.grails:grails-gradle-plugin:${grails_gradle_version}"
+        classpath "edu.berkeley.calnet.gradle.plugins:gradle-grails-maven-publish-plugin:${grails_maven_publish_version}"
     }
 }
 
 apply plugin: 'grails'
+apply plugin: 'edu.berkeley.calnet.grails-maven-publish'
+apply plugin: 'maven-publish'
 apply plugin: 'project-report'
 apply plugin: "io.spring.dependency-management"
-apply plugin: 'maven-publish'
-//apply plugin: 'com.jfrog.bintray'
 
 group = 'edu.berkeley.calnet.grails.plugins'
 version = '1.0.0-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
@@ -117,11 +118,13 @@ dependencies {
 
 // publishing with './gradlew publish'
 publish.dependsOn assemble
+publishToMavenLocal.dependsOn assemble
 publishing {
     publications {
         maven(MavenPublication) {
-            artifactId "external-groovy"
-            artifact("${project.name}-${project.version}.zip")
+            grailsMavenPublish.addGrailsComponent(project)
+            from components.grails
+            grailsMavenPublish.fixPom(configurations, pom)
         }
     }
 
@@ -138,30 +141,3 @@ publishing {
         }
     }
 }
-
-/*
-if (project.hasProperty('default_bintray_user')) {
-    bintray {
-        // put in ~/.gradle/gradle.properties
-        user = project.property('default_bintray_user')
-        key = project.property('default_bintray_api_key')
-        publications = ['mavenJava']
-
-        //dryRun = true
-
-        pkg {
-            repo = 'maven'
-            name = project.name
-            desc = 'Run external Groovy scripts from Grails'
-            licenses = ['BSD']
-            vcsUrl = 'https://github.com/calnet-oss/grails-external-groovy-plugin'
-            issueTrackerUrl = 'https://github.com/calnet-oss/grails-external-groovy-plugin/issues'
-            version {
-                name = project.version
-                desc = "$name v${project.version}- $desc"
-                released = new Date()
-            }
-        }
-    }
-}
-*/
