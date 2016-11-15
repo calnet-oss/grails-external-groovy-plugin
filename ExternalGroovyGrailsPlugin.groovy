@@ -30,7 +30,7 @@ class ExternalGroovyGrailsPlugin {
     def group = "edu.berkeley.calnet.grails.plugins"
 
     // the plugin version
-    def version = "1.0.0-SNAPSHOT" // !!! Change in build.gradle too
+    def version = "1.0.1-SNAPSHOT" // !!! Change in build.gradle too
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.4 > *"
     // resources that are excluded from plugin packaging
@@ -100,7 +100,7 @@ Execute external Groovy scripts from Grails.
                 ScriptRunnerImpl,
                 new File(eg?.defaultScriptDirectory ?: "external-scripts"),
                 eg?.cacheScripts != null ?: true,
-                eg?.launchScriptFileMonitorThread as Boolean,
+                (eg?.launchScriptFileMonitorThread ? (boolean)eg?.launchScriptFileMonitorThread : false),
                 (eg?.scriptFileMonitorThreadIntervalSeconds ?: 30) as Integer
         )
     }
