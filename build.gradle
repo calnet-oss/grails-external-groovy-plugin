@@ -56,7 +56,7 @@ apply plugin: 'project-report'
 apply plugin: "io.spring.dependency-management"
 
 group = 'edu.berkeley.calnet.grails.plugins'
-version = '1.0.1-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
+version = '1.0.2-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -104,10 +104,6 @@ dependencies {
      * BEGIN STANDARD GRAILS DEPENDENCIES FROM gradle-grails-bom
      *****************************************************************/
     provided 'javax.servlet:javax.servlet-api'
-
-    runtime('org.grails.plugins:hibernate4') {
-        exclude module: 'xml-apis'
-    }
 
     test 'junit:junit'
     test 'org.spockframework:spock-core'
