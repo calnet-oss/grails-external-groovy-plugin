@@ -29,9 +29,6 @@ package edu.berkeley.calnet.groovy
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.util.logging.Slf4j
-import spock.lang.Ignore
-import spock.lang.Issue
-import spock.lang.See
 import spock.lang.Specification
 
 import java.nio.ByteBuffer
@@ -40,8 +37,6 @@ import java.nio.ByteBuffer
 @Slf4j(value = "LOG")
 class ScriptRunnerUnloadingSpec extends Specification {
 
-    @Ignore
-    @Issue('https://ucidentity.atlassian.net/browse/CNR-1276')
     void "test script unloading"() {
         given:
         ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File("external-scripts/unloading"), false)
