@@ -43,28 +43,17 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "io.spring.gradle:dependency-management-plugin:${spring_depmgmt_version}"
-        classpath "org.grails:grails-gradle-plugin:${grails_gradle_version}"
-        classpath "edu.berkeley.calnet.gradle.plugins:gradle-grails-maven-publish-plugin:${grails_maven_publish_version}"
+        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
     }
 }
 
-apply plugin: 'grails'
-apply plugin: 'edu.berkeley.calnet.grails-maven-publish'
-apply plugin: 'maven-publish'
-apply plugin: 'project-report'
-apply plugin: "io.spring.dependency-management"
-
+version = '1.1.0-SNAPSHOT'
 group = 'edu.berkeley.calnet.grails.plugins'
-version = '1.0.3-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
-grails {
-    grailsVersion = '2.5.4'
-    groovyVersion = '2.4.4'
-}
+apply plugin: "idea"
+apply plugin: "org.grails.grails-plugin"
+apply plugin: 'project-report'
+apply plugin: 'maven-publish'
 
 repositories {
     mavenLocal()
@@ -81,54 +70,41 @@ repositories {
         }
     }
     jcenter()
-    grails.central()
     mavenCentral()
 }
 
 test {
     // We'd like memory to be low for the tests so we can trigger GC for
     // class unloading checking
-    jvmOptions {
-        maxHeapSize = "92m"
-    }
+    minHeapSize = "64m"
+    maxHeapSize = "92m"
+    jvmArgs "-XX:MaxMetaspaceSize=92m"
 }
 
 dependencyManagement {
     imports {
-        mavenBom "edu.berkeley.calnet:gradle-grails-bom:${grails.grailsVersion}"
+        mavenBom "org.grails:grails-bom:$grailsVersion"
     }
+    applyMavenExclusions false
 }
 
 dependencies {
-    /*****************************************************************
-     * BEGIN STANDARD GRAILS DEPENDENCIES FROM gradle-grails-bom
-     *****************************************************************/
-    provided 'javax.servlet:javax.servlet-api'
+    compile "org.springframework.boot:spring-boot-starter-logging"
+    compile "org.springframework.boot:spring-boot-autoconfigure"
+    compile "org.grails:grails-core"
+    compile "org.springframework.boot:spring-boot-starter-tomcat"
+    compile "org.grails:grails-dependencies"
+    console "org.grails:grails-console"
+    profile "org.grails.profiles:plugin"
+    provided "org.grails:grails-plugin-services"
+    provided "org.grails:grails-plugin-domain-class"
+    provided "org.grails:grails-web-boot"
+    testCompile "org.grails:grails-plugin-testing"
 
-    test 'junit:junit'
-    test 'org.spockframework:spock-core'
-    /*****************************************************************
-     * END STANDARD GRAILS DEPENDENCIES FROM gradle-grails-bom
-     *****************************************************************/
 }
 
-grailsMavenPublish.addJavaComponent(project)
-
-jar {
-    metaInf {
-        from "plugin.xml"
-        rename "plugin.xml", "grails-plugin.xml"
-    }
-}
-
-task sourceJar(type: Jar) {
-    from "src/java"
-    from "src/groovy"
-    metaInf {
-        from "plugin.xml"
-        rename "plugin.xml", "grails-plugin.xml"
-    }
-}
+// enable if you wish to package this plugin as a standalone application
+bootRepackage.enabled = false
 
 // publishing with './gradlew publish'
 publish.dependsOn assemble
@@ -136,17 +112,21 @@ publishToMavenLocal.dependsOn assemble
 publishing {
     publications {
         // zip file
-        mavenGrails(MavenPublication) {
-            grailsMavenPublish.addGrailsComponent(project)
-            from components.grails
-            grailsMavenPublish.fixPom(configurations, pom)
-        }
+        mavenJar(MavenPublication) {
+            pom.withXml {
+                def pomNode = asNode()
+                pomNode.dependencyManagement.replaceNode {}
 
-        // jar and sources
-        mavenJava(MavenPublication) {
+                // simply remove dependencies without a version
+                // version-less dependencies are handled with dependencyManagement
+                // see https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/8 for more complete solutions
+                pomNode.dependencies.dependency.findAll {
+                    it.version.text().isEmpty()
+                }.each {
+                    it.replaceNode {}
+                }
+            }
             from components.java
-            grailsMavenPublish.fixPom(configurations, pom)
-            artifact sourceJar { classifier "sources" }
         }
     }
 
