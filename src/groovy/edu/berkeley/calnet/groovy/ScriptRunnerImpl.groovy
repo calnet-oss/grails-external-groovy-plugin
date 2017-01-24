@@ -271,10 +271,8 @@ class ScriptRunnerImpl implements ScriptRunner {
         scriptInstance.metaClass.setProperty("log", LoggerFactory.getLogger(scriptInstance.getClass()))
 
         // Inject passed-in properties
-        if (propertyInjections != null) {
-            for (def entry in propertyInjections) {
-                scriptInstance.metaClass.setProperty(entry.key, entry.value)
-            }
+        propertyInjections?.each { Map.Entry<String, Object> entry ->
+            scriptInstance.metaClass.setProperty(entry.key, entry.value)
         }
 
         // Run the script instance.  If the script has no class defined in
@@ -291,6 +289,17 @@ class ScriptRunnerImpl implements ScriptRunner {
         // Don't want to hang on to any scl class references with the result
         // object.  That's why we turn it to a String.
         def resultString = (result != null ? result.toString() : null)
+
+        // Null out the injected properties.
+        // Otherwise, Groovy's ThreadManagedMetaBeanProperty has a static cache
+        // that will hold references to the injections.
+        if (grailsApplication) {
+            scriptInstance.metaClass.setProperty("grailsApplication", null)
+        }
+        scriptInstance.metaClass.setProperty("log", null)
+        propertyInjections?.each { Map.Entry<String, Object> entry ->
+            scriptInstance.metaClass.setProperty(entry.key, null)
+        }
 
         // Unload any of our loaded classes from the Groovy meta class
         // repository.
