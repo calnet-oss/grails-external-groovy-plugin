@@ -56,7 +56,7 @@ apply plugin: 'project-report'
 apply plugin: "io.spring.dependency-management"
 
 group = 'edu.berkeley.calnet.grails.plugins'
-version = '1.0.3-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
+version = '1.0.4-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
