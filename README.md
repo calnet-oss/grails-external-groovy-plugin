@@ -185,10 +185,14 @@ The implementation of `ScriptRunner` will inject the `grailsApplication`
 property into the script, assuming that you are using an injected
 scriptRunner instance created by Spring.
 
-It will also inject an instance of a Groovy `Logger` as `log`.
+It will also inject an instance of a SLF4J `Logger` as `log`.
+
+To use these injections, the external scripts have declare the properties,
+so should be classes.
 
 You can also add your own property injections by passing a map as the second
-parameter to `runScript()`.
+parameter to `runScript()`.  Again, these injections have to be declared
+properties in your external script class.
 
 Example:
 ```
@@ -197,7 +201,13 @@ Example:
 
 `testScript.groovy`:
 ```
-  println(myProperty)
+class testScript {
+  def myProperty
+
+  void run() {
+    println(myProperty)
+  }
+}
 ```
 
 This example will print out `my test property` to the console.
