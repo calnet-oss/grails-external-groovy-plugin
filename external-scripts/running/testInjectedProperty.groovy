@@ -24,6 +24,11 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+class testInjectedProperty {
+    def testProperty
 
-// return back the injected property so the test can confirm its existence
-testProperty
+    def run() {
+        // return back the injected property so the test can confirm its existence
+        return testProperty
+    }
+}
