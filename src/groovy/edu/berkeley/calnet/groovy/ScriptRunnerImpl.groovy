@@ -255,24 +255,30 @@ class ScriptRunnerImpl implements ScriptRunner {
 
         // Run the Bootstrap script, which will return an instance of
         // the actual script class
-        Object scriptInstance
+        GroovyObject scriptInstance
         try {
-            scriptInstance = shell.run(bootstrapSource, [] as String[])
+            scriptInstance = (GroovyObject) shell.run(bootstrapSource, [] as String[])
         } catch (Exception e) {
             throw new ScriptRunnerException(e)
         }
 
-        // Inject objects into our scriptInstance object using metaClass
-        if (grailsApplication) {
-            scriptInstance.metaClass.setProperty("grailsApplication", grailsApplication)
+        // Inject grailsApplication, if the script has the property declared.
+        if (grailsApplication && scriptInstance.hasProperty("grailsApplication")) {
+            scriptInstance.setProperty("grailsApplication", grailsApplication)
         }
 
-        // Inject a log instance for the script
-        scriptInstance.metaClass.setProperty("log", LoggerFactory.getLogger(scriptInstance.getClass()))
+        // Inject a log instance, if the script has the property declared.
+        if (scriptInstance.hasProperty("log")) {
+            scriptInstance.setProperty("log", LoggerFactory.getLogger(scriptInstance.getClass()))
+        }
 
-        // Inject passed-in properties
+        // Inject passed-in properties, if the script has those properties declared.
         propertyInjections?.each { Map.Entry<String, Object> entry ->
-            scriptInstance.metaClass.setProperty(entry.key, entry.value)
+            if (scriptInstance.hasProperty(entry.key)) {
+                scriptInstance.setProperty(entry.key, entry.value)
+            } else {
+                log.warn("External script with class name $className does not have ${entry.key} property declared")
+            }
         }
 
         // Run the script instance.  If the script has no class defined in
@@ -291,14 +297,16 @@ class ScriptRunnerImpl implements ScriptRunner {
         def resultString = (result != null ? result.toString() : null)
 
         // Null out the injected properties.
-        // Otherwise, Groovy's ThreadManagedMetaBeanProperty has a static cache
-        // that will hold references to the injections.
-        if (grailsApplication) {
-            scriptInstance.metaClass.setProperty("grailsApplication", null)
+        if (grailsApplication && scriptInstance.hasProperty("grailsApplication")) {
+            scriptInstance.setProperty("grailsApplication", null)
         }
-        scriptInstance.metaClass.setProperty("log", null)
+        if (scriptInstance.hasProperty("log")) {
+            scriptInstance.setProperty("log", null)
+        }
         propertyInjections?.each { Map.Entry<String, Object> entry ->
-            scriptInstance.metaClass.setProperty(entry.key, null)
+            if (scriptInstance.hasProperty(entry.key)) {
+                scriptInstance.setProperty(entry.key, null)
+            }
         }
 
         // Unload any of our loaded classes from the Groovy meta class

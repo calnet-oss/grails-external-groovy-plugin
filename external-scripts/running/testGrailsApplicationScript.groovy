@@ -26,12 +26,18 @@
  */
 import edu.berkeley.calnet.groovy.test.TestService
 
-boolean isSet
-try {
-  isSet = grailsApplication != null
-}
-catch(Exception e) {
-}
+class testGrailsApplicationScript {
+    def grailsApplication
 
-// return a string indicating if grailsApplication was injected or not
-(isSet ? TestService.GRAILS_APPLICATION_SET : TestService.GRAILS_APPLICATION_NOT_SET)
+    String run() {
+        boolean isSet = false
+        try {
+            isSet = grailsApplication != null
+        }
+        catch (ignored) {
+        }
+
+        // return a string indicating if grailsApplication was injected or not
+        return (isSet ? TestService.GRAILS_APPLICATION_SET : TestService.GRAILS_APPLICATION_NOT_SET)
+    }
+}

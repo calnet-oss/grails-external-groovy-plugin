@@ -1,4 +1,3 @@
-log.debug("testing the logger")
 /**
  * Copyright (c) 2016, Regents of the University of California and
  * contributors.
@@ -25,6 +24,13 @@ log.debug("testing the logger")
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// return back the injected log so the test can confirm its existence
-// results are returned as a String, so return class name rather than the object
-log.getClass().getName()
+class testLogInstance {
+    def log
+
+    String run() {
+        log.debug("testing the logger")
+        // return back the injected log so the test can confirm its existence
+        // results are returned as a String, so return class name rather than the object
+        return log.getClass().getName()
+    }
+}
