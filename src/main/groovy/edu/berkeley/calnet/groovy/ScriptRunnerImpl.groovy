@@ -199,7 +199,7 @@ class ScriptRunnerImpl implements ScriptRunner {
      * relevant in caching mode.
      */
     @Synchronized
-    public void reloadClassLoader() {
+    void reloadClassLoader() {
         classLoaderInstance = null
     }
 
@@ -211,7 +211,7 @@ class ScriptRunnerImpl implements ScriptRunner {
      *        scriptDirectory/myscript.groovy, then you would pass in
      *        "myscript" as the class name.
      */
-    public Object runScript(String className, Map<String, Object> propertyInjections = null) throws ScriptRunnerException {
+    Object runScript(String className, Map<String, Object> propertyInjections = null) throws ScriptRunnerException {
         // instantiate a new ScriptClassLoader for this script
         ScriptClassLoader scl = getClassLoaderInstance()
 
@@ -263,18 +263,22 @@ class ScriptRunnerImpl implements ScriptRunner {
             throw new ScriptRunnerException(e)
         }
 
-        // Inject objects into our scriptInstance object using metaClass
-        if (grailsApplication) {
-            scriptInstance.metaClass.setProperty("grailsApplication", grailsApplication)
+        // Inject objects into our scriptInstance object
+        if (grailsApplication && grailsApplication.hasProperty("grailsApplication")) {
+            scriptInstance.grailsApplication = grailsApplication
         }
 
         // Inject a log instance for the script
-        scriptInstance.metaClass.setProperty("log", LoggerFactory.getLogger(scriptInstance.getClass()))
+        if (scriptInstance.hasProperty("log")) {
+            scriptInstance.log = LoggerFactory.getLogger(scriptInstance.getClass())
+        }
 
         // Inject passed-in properties
-        if (propertyInjections != null) {
-            for (def entry in propertyInjections) {
-                scriptInstance.metaClass.setProperty(entry.key, entry.value)
+        propertyInjections?.each { Map.Entry<String, Object> entry ->
+            if (scriptInstance.hasProperty(entry.key)) {
+                scriptInstance."${entry.key}" = entry.value
+            } else {
+                log.warn("An injection was requested for property ${entry.key} but external script class ${scriptInstance.getClass().name} does not have this property")
             }
         }
 
@@ -302,16 +306,8 @@ class ScriptRunnerImpl implements ScriptRunner {
         return resultString
     }
 
-    public Statistics getStatistics() {
+    Statistics getStatistics() {
         return statistics
-    }
-
-    @Synchronized
-    public void enableDebugging() {
-        log.setLevel(org.apache.log4j.Level.DEBUG)
-        checkDebuggingEnabled()
-        if (classLoaderInstance != null)
-            classLoaderInstance.enableDebugging()
     }
 
     private void checkDebuggingEnabled() {
@@ -335,7 +331,7 @@ class ScriptRunnerImpl implements ScriptRunner {
      *        hurt performance, as the thread will be constantly scanning
      *        the filesystem for changes.
      */
-    public void launchScriptFileMonitorThread(int checkIntervalSeconds) throws ScriptRunnerException {
+    void launchScriptFileMonitorThread(int checkIntervalSeconds) throws ScriptRunnerException {
         if (isScriptFileMonitorThreadAlive()) {
             throw new ScriptRunnerException("scriptFileMonitorThread is already running")
         } else {
@@ -347,7 +343,7 @@ class ScriptRunnerImpl implements ScriptRunner {
     /**
      * Stop the script monitor thread.
      */
-    public void stopScriptFileMonitorThread() {
+    void stopScriptFileMonitorThread() {
         if (isScriptFileMonitorThreadAlive()) {
             scriptFileMonitorThread.doStop = true
             scriptFileMonitorThread.interrupt()
@@ -357,7 +353,7 @@ class ScriptRunnerImpl implements ScriptRunner {
     /**
      * @return true if script monitor thread is running
      */
-    public boolean isScriptFileMonitorThreadAlive() {
+    boolean isScriptFileMonitorThreadAlive() {
         return scriptFileMonitorThread != null && scriptFileMonitorThread.isAlive()
     }
 
