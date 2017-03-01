@@ -106,6 +106,15 @@ dependencies {
 // enable if you wish to package this plugin as a standalone application
 bootRepackage.enabled = false
 
+jar {
+    from { ["LICENSE.txt", "NOTICE_THIRD_PARTY.txt"] }
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allGroovy
+    from { ["LICENSE.txt", "NOTICE_THIRD_PARTY.txt"] }
+}
+
 // publishing with './gradlew publish'
 publish.dependsOn assemble
 publishToMavenLocal.dependsOn assemble
@@ -127,6 +136,7 @@ publishing {
                 }
             }
             from components.java
+            artifact sourceJar { classifier "sources" }
         }
     }
 
