@@ -100,6 +100,7 @@ publishing {
     publications {
         // zip file
         mavenJar(MavenPublication) {
+            artifactId 'external-groovy'
             pom.withXml {
                 def pomNode = asNode()
                 pomNode.dependencyManagement.replaceNode {}
