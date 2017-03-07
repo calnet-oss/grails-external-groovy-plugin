@@ -263,22 +263,22 @@ class ScriptRunnerImpl implements ScriptRunner {
             throw new ScriptRunnerException(e)
         }
 
-        // Inject grailsApplication, if the script has the property declared.
-        if (grailsApplication && scriptInstance.hasProperty("grailsApplication")) {
-            scriptInstance.setProperty("grailsApplication", grailsApplication)
+        // Inject objects into our scriptInstance object
+        if (grailsApplication && grailsApplication.hasProperty("grailsApplication")) {
+            scriptInstance.grailsApplication = grailsApplication
         }
 
-        // Inject a log instance, if the script has the property declared.
+        // Inject a log instance for the script
         if (scriptInstance.hasProperty("log")) {
-            scriptInstance.setProperty("log", LoggerFactory.getLogger(scriptInstance.getClass()))
+            scriptInstance.log = LoggerFactory.getLogger(scriptInstance.getClass())
         }
 
-        // Inject passed-in properties, if the script has those properties declared.
+        // Inject passed-in properties
         propertyInjections?.each { Map.Entry<String, Object> entry ->
             if (scriptInstance.hasProperty(entry.key)) {
-                scriptInstance.setProperty(entry.key, entry.value)
+                scriptInstance."${entry.key}" = entry.value
             } else {
-                log.warn("External script with class name $className does not have ${entry.key} property declared")
+                log.warn("An injection was requested for property ${entry.key} but external script class ${scriptInstance.getClass().name} does not have this property")
             }
         }
 
