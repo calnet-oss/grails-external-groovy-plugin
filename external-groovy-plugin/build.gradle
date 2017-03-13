@@ -94,7 +94,7 @@ task sourceJar(type: Jar) {
 }
 
 // publishing with './gradlew publish'
-publish.dependsOn assemble
+publish.dependsOn assemble, publishToMavenLocal
 publishToMavenLocal.dependsOn assemble
 publishing {
     publications {
