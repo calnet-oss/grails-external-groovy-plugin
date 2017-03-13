@@ -89,7 +89,7 @@ jar {
 }
 
 task sourceJar(type: Jar) {
-    from sourceSets.main.allGroovy
+    from sourceSets.main.allSource
     from { ["LICENSE.txt", "NOTICE_THIRD_PARTY.txt"] }
 }
 
