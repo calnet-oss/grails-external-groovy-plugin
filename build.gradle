@@ -67,8 +67,7 @@ allprojects {
 
     group = 'edu.berkeley.calnet.grails.plugins'
     version = '1.1.0-SNAPSHOT'
-}
-subprojects {
+
     repositories {
         mavenLocal()
         // If using a Maven proxy, put the property settings in

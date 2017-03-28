@@ -24,31 +24,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-buildscript {
-    repositories {
-        mavenLocal()
-        // If using a Maven proxy, put the property settings in
-        // ~/.gradle/gradle.properties for default_proxy_url,
-        // default_proxy_username and default_proxy_password.
-        if (project.hasProperty("default_proxy_url")) {
-            maven {
-                url project.property("default_proxy_url")
-                credentials {
-                    username project.property("default_proxy_username")
-                    password project.property("default_proxy_password")
-                }
-            }
-        }
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-    }
-}
-
 apply plugin: "org.grails.grails-plugin"
-apply plugin: 'project-report'
 apply plugin: 'maven-publish'
 
 test {
@@ -67,58 +43,36 @@ dependencyManagement {
 }
 
 dependencies {
-    compileOnly "org.springframework.boot:spring-boot-starter-logging"
-    compileOnly "org.springframework.boot:spring-boot-autoconfigure"
+    provided "javax.servlet:javax.servlet-api"
     compileOnly "org.grails:grails-core"
-    compileOnly "org.springframework.boot:spring-boot-starter-tomcat"
     compileOnly "org.grails:grails-dependencies"
-    console "org.grails:grails-console"
+    compileOnly "org.grails:grails-plugin-services"
     profile "org.grails.profiles:plugin"
-    provided "org.grails:grails-plugin-services"
-    provided "org.grails:grails-plugin-domain-class"
-    provided "org.grails:grails-web-boot"
-    testCompile "org.grails:grails-plugin-testing"
-
 }
 
 // enable if you wish to package this plugin as a standalone application
 bootRepackage.enabled = false
 
 jar {
-    from { ["LICENSE.txt", "NOTICE_THIRD_PARTY.txt"] }
+    from { ["../LICENSE.txt", "../NOTICE_THIRD_PARTY.txt"] }
 }
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
-    from { ["LICENSE.txt", "NOTICE_THIRD_PARTY.txt"] }
+    from { ["../LICENSE.txt", "../NOTICE_THIRD_PARTY.txt"] }
 }
 
 // publishing with './gradlew publish'
-publish.dependsOn assemble, publishToMavenLocal
+publish.dependsOn assemble
 publishToMavenLocal.dependsOn assemble
 publishing {
     publications {
-        // zip file
-        mavenJar(MavenPublication) {
-            artifactId 'external-groovy'
-            pom.withXml {
-                def pomNode = asNode()
-                pomNode.dependencyManagement.replaceNode {}
-
-                // simply remove dependencies without a version
-                // version-less dependencies are handled with dependencyManagement
-                // see https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/8 for more complete solutions
-                pomNode.dependencies.dependency.findAll {
-                    it.version.text().isEmpty()
-                }.each {
-                    it.replaceNode {}
-                }
-            }
+        maven(MavenPublication) {
+            artifactId rootProject.name
             from components.java
             artifact sourceJar { classifier "sources" }
         }
     }
-
     repositories {
         maven {
             // Put the property settings in ~/.gradle/gradle.properties for
