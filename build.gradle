@@ -38,6 +38,7 @@
 //
 buildscript {
     repositories {
+        mavenLocal()
         if (project.hasProperty("default_proxy_url")) {
             maven {
                 url project.property("default_proxy_url")
@@ -47,12 +48,12 @@ buildscript {
                 }
             }
         }
-        mavenLocal()
+        jcenter()
         maven { url "https://repo.grails.org/grails/core" }
+        mavenCentral()
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-        classpath "org.grails.plugins:hibernate5:6.0.4"
     }
 }
 
@@ -83,5 +84,7 @@ subprojects {
             }
         }
         jcenter()
+        maven { url "https://repo.grails.org/grails/core" }
+        mavenCentral()
     }
 }
