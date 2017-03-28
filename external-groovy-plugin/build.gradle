@@ -27,13 +27,6 @@
 apply plugin: "org.grails.grails-plugin"
 apply plugin: 'maven-publish'
 
-dependencyManagement {
-    imports {
-        mavenBom "org.grails:grails-bom:$grailsVersion"
-    }
-    applyMavenExclusions false
-}
-
 dependencies {
     provided "javax.servlet:javax.servlet-api"
     compileOnly "org.grails:grails-core"
@@ -42,6 +35,10 @@ dependencies {
     profile "org.grails.profiles:plugin"
 }
 
+bootRun {
+    jvmArgs('-Dspring.output.ansi.enabled=always')
+    addResources = true
+}
 // enable if you wish to package this plugin as a standalone application
 bootRepackage.enabled = false
 
