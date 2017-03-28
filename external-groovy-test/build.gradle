@@ -26,3 +26,10 @@ bootRun {
     addResources = true
 }
 
+test {
+    // We'd like memory to be low for the tests so we can trigger GC for
+    // class unloading checking
+    minHeapSize = "64m"
+    maxHeapSize = "92m"
+    jvmArgs "-XX:MaxMetaspaceSize=92m", "-Dgroovy.use.classvalue=true"
+}

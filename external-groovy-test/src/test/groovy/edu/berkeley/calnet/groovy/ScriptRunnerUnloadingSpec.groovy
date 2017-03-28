@@ -31,7 +31,6 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore
 import spock.lang.Issue
-import spock.lang.See
 import spock.lang.Specification
 
 import java.nio.ByteBuffer
@@ -40,11 +39,22 @@ import java.nio.ByteBuffer
 @Slf4j(value = "LOG")
 class ScriptRunnerUnloadingSpec extends Specification {
 
-    @Ignore
-    @Issue('https://ucidentity.atlassian.net/browse/CNR-1276')
     void "test script unloading"() {
+        /**
+         * Starting with Groovy 2.4.5, the groovy.use.classvalue system
+         * property MUST be set to true (i.e., add
+         * -Dgroovy.use.classvalue=true to the JVM command line;
+         * build.gradle has it in test{jvmArgs}) to avoid leaking memory (at
+         * least, in the context of external-groovy).  See CNR-1276.  This
+         * relates to Groovy bug GROOVY-7591.
+         *
+         * A check for the presence of groovy.use.classvalue has been added
+         * to ScriptRunnerImpl that produces a log warning if the value is
+         * not set.
+         */
         given:
         ScriptRunnerImpl scriptRunner = new ScriptRunnerImpl(new File("external-scripts/unloading"), false)
+
         when:
         /**
          * See the comments in ScriptClassLoaderSpec.groovy as we are
@@ -65,12 +75,16 @@ class ScriptRunnerUnloadingSpec extends Specification {
                 LOG.info("Cleaned up after an expected and wanted out of memory error.")
                 break
             }
-            //if(i % 100 == 0)
-            //  System.out.println(scriptRunner.statistics.loaderInstantiationCount + ", " + scriptRunner.statistics.loaderFinalizationCount)
-            if (scriptRunner.statistics.loaderFinalizationCount > 0)
+            //if (i % 100 == 0) {
+            //    println(scriptRunner.statistics.loaderInstantiationCount + ", " + scriptRunner.statistics.loaderFinalizationCount)
+            //}
+            if (scriptRunner.statistics.loaderFinalizationCount > 0) {
+                LOG.info("Breaking because loaderFinalizationCount is positive")
                 break
+            }
         }
         LOG.info("took $i iterations, ${scriptRunner.statistics.loaderInstantiationCount} loaded, ${scriptRunner.statistics.loaderFinalizationCount} unloaded")
+
         then:
         scriptRunner.statistics.loaderFinalizationCount > 0
     }

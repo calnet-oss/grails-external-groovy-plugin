@@ -212,6 +212,17 @@ class ScriptRunnerImpl implements ScriptRunner {
      *        "myscript" as the class name.
      */
     Object runScript(String className, Map<String, Object> propertyInjections = null) throws ScriptRunnerException {
+        /**
+         * Starting with Groovy 2.4.5, the groovy.use.classvalue system
+         * property MUST be set to true (i.e., add
+         * -Dgroovy.use.classvalue=true to the JVM command line) to avoid
+         * leaking memory (at least, in the context of external-groovy). 
+         * See CNR-1276.  This relates to Groovy bug GROOVY-7591.
+         */
+        if(System.getProperty("groovy.use.classvalue") != "true") {
+            log.warn("WARNING: The groovy.use.classvalue system property is not set to true.  This will guarantee a memory leak when using external-groovy.")
+        }
+
         // instantiate a new ScriptClassLoader for this script
         ScriptClassLoader scl = getClassLoaderInstance()
 
