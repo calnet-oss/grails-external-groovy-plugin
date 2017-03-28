@@ -31,7 +31,7 @@
 //
 // The two subprojects are:
 // external-groovy-plugin - The main plugin that is packaged as a jar.
-// external-groovy-tests - A Grails app with tests using the plugin.
+// external-groovy-test - A Grails app with tests using the plugin.
 //
 // Gradle Multi-Project documentation is here:
 // https://docs.gradle.org/current/userguide/multi_project_builds.html
