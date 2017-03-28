@@ -29,8 +29,6 @@ package edu.berkeley.calnet.groovy
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.util.logging.Slf4j
-import spock.lang.Ignore
-import spock.lang.Issue
 import spock.lang.Specification
 
 @Slf4j
@@ -219,8 +217,6 @@ class ScriptRunnerSpec extends Specification {
         scriptRunner.statistics.getTotalCompiledCountForClass(scriptName) == 2
     }
 
-    @Ignore
-    @Issue('https://ucidentity.atlassian.net/browse/CNR-1276')
     void "test recompiling changed source file, with caching enabled"() {
         given:
         File sourceFile = File.createTempFile("ScriptRunnerSpec", ".groovy", tmpDir)
