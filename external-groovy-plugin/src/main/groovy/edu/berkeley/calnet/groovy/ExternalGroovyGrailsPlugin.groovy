@@ -93,11 +93,12 @@ Execute external Groovy scripts from Grails.
      */
     Closure doWithSpring() {
         { ->
-            def eg = (System.getProperty("externalGroovy.defaultScriptDirectory") ?: application.config?.externalGroovy ?: [:])
+            def eg = (application.config?.externalGroovy ?: [:])
+            def defaultScriptDirectory = (System.getProperty("externalGroovy.defaultScriptDirectory") ?: eg?.defaultScriptDirectory)
             LOG.debug("Instantiating scriptRunner with config: ${eg}")
             scriptRunner(
                     ScriptRunnerImpl,
-                    new File(eg?.defaultScriptDirectory ?: "external-scripts"),
+                    new File(defaultScriptDirectory ?: "external-scripts"),
                     eg?.cacheScripts != null ?: true,
                     (eg?.launchScriptFileMonitorThread ? (boolean) eg?.launchScriptFileMonitorThread : false),
                     (eg?.scriptFileMonitorThreadIntervalSeconds ?: 30) as Integer
