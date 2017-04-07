@@ -78,7 +78,8 @@ Execute external Groovy scripts from Grails.
     /**
      * In config:
      *
-     * If externalGroovy.defaultScriptDirectory set, use that
+     * If system property externalGroovy.defaultScriptDirectory set, use that
+     *    else If externalGroovy.defaultScriptDirectory set, use that
      *    otherwise default to ./external-scripts
      *
      * If externalGroovy.cacheScripts set, use that
@@ -92,7 +93,7 @@ Execute external Groovy scripts from Grails.
      */
     Closure doWithSpring() {
         { ->
-            def eg = (application.config?.externalGroovy ?: [:])
+            def eg = (System.getProperty("externalGroovy.defaultScriptDirectory") ?: application.config?.externalGroovy ?: [:])
             LOG.debug("Instantiating scriptRunner with config: ${eg}")
             scriptRunner(
                     ScriptRunnerImpl,
