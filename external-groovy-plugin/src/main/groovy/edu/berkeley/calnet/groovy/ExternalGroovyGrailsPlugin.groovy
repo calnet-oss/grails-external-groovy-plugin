@@ -95,7 +95,7 @@ Execute external Groovy scripts from Grails.
         { ->
             def eg = (application.config?.externalGroovy ?: [:])
             def defaultScriptDirectory = (System.getProperty("externalGroovy.defaultScriptDirectory") ?: eg?.defaultScriptDirectory)
-            LOG.debug("Instantiating scriptRunner with config: ${eg}")
+            LOG.debug("Instantiating scriptRunner with config: ${eg} and defaultScriptDirectory=${defaultScriptDirectory}")
             scriptRunner(
                     ScriptRunnerImpl,
                     new File(defaultScriptDirectory ?: "external-scripts"),
