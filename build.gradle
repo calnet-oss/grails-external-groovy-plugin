@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, Regents of the University of California and
  * contributors.
  * All rights reserved.
@@ -24,7 +24,50 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+//
+// This is a Gradle multi-project build.
+// See settings.gradle for the subprojects.
+//
+// The two subprojects are:
+// external-groovy-plugin - The main plugin that is packaged as a jar.
+// external-groovy-test - A Grails app with tests using the plugin.
+//
+// Gradle Multi-Project documentation is here:
+// https://docs.gradle.org/current/userguide/multi_project_builds.html
+//
 buildscript {
+    repositories {
+        mavenLocal()
+        if (project.hasProperty("default_proxy_url")) {
+            maven {
+                url project.property("default_proxy_url")
+                credentials {
+                    username project.property("default_proxy_username")
+                    password project.property("default_proxy_password")
+                }
+            }
+        }
+        jcenter()
+        maven { url "https://repo.grails.org/grails/core" }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+    }
+}
+
+
+allprojects {
+    apply plugin: "idea"
+    apply plugin: "groovy"
+
+    targetCompatibility = 1.8
+    sourceCompatibility = 1.8
+
+    group = 'edu.berkeley.calnet.grails.plugins'
+    version = '1.1.0-SNAPSHOT'
+
     repositories {
         mavenLocal()
         // If using a Maven proxy, put the property settings in
@@ -40,126 +83,7 @@ buildscript {
             }
         }
         jcenter()
+        maven { url "https://repo.grails.org/grails/core" }
         mavenCentral()
-    }
-    dependencies {
-        classpath "io.spring.gradle:dependency-management-plugin:${spring_depmgmt_version}"
-        classpath "org.grails:grails-gradle-plugin:${grails_gradle_version}"
-        classpath "edu.berkeley.calnet.gradle.plugins:gradle-grails-maven-publish-plugin:${grails_maven_publish_version}"
-    }
-}
-
-apply plugin: 'grails'
-apply plugin: 'edu.berkeley.calnet.grails-maven-publish'
-apply plugin: 'maven-publish'
-apply plugin: 'project-report'
-apply plugin: "io.spring.dependency-management"
-
-group = 'edu.berkeley.calnet.grails.plugins'
-version = '1.0.5-SNAPSHOT' // !!! Change in ExternalGroovyGrailsPlugin.groovy too
-
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
-grails {
-    grailsVersion = '2.5.4'
-    groovyVersion = '2.4.4'
-}
-
-repositories {
-    mavenLocal()
-    // If using a Maven proxy, put the property settings in
-    // ~/.gradle/gradle.properties for default_proxy_url,
-    // default_proxy_username and default_proxy_password.
-    if (project.hasProperty("default_proxy_url")) {
-        maven {
-            url project.property("default_proxy_url")
-            credentials {
-                username project.property("default_proxy_username")
-                password project.property("default_proxy_password")
-            }
-        }
-    }
-    jcenter()
-    grails.central()
-    mavenCentral()
-}
-
-test {
-    // We'd like memory to be low for the tests so we can trigger GC for
-    // class unloading checking
-    jvmOptions {
-        maxHeapSize = "92m"
-    }
-}
-
-dependencyManagement {
-    imports {
-        mavenBom "edu.berkeley.calnet:gradle-grails-bom:${grails.grailsVersion}"
-    }
-}
-
-dependencies {
-    /*****************************************************************
-     * BEGIN STANDARD GRAILS DEPENDENCIES FROM gradle-grails-bom
-     *****************************************************************/
-    provided 'javax.servlet:javax.servlet-api'
-
-    test 'junit:junit'
-    test 'org.spockframework:spock-core'
-    /*****************************************************************
-     * END STANDARD GRAILS DEPENDENCIES FROM gradle-grails-bom
-     *****************************************************************/
-}
-
-grailsMavenPublish.addJavaComponent(project)
-
-jar {
-    metaInf {
-        from "plugin.xml"
-        rename "plugin.xml", "grails-plugin.xml"
-    }
-}
-
-task sourceJar(type: Jar) {
-    from "src/java"
-    from "src/groovy"
-    metaInf {
-        from "plugin.xml"
-        rename "plugin.xml", "grails-plugin.xml"
-    }
-}
-
-// publishing with './gradlew publish'
-publish.dependsOn assemble
-publishToMavenLocal.dependsOn assemble
-publishing {
-    publications {
-        // zip file
-        mavenGrails(MavenPublication) {
-            grailsMavenPublish.addGrailsComponent(project)
-            from components.grails
-            grailsMavenPublish.fixPom(configurations, pom)
-        }
-
-        // jar and sources
-        mavenJava(MavenPublication) {
-            from components.java
-            grailsMavenPublish.fixPom(configurations, pom)
-            artifact sourceJar { classifier "sources" }
-        }
-    }
-
-    repositories {
-        maven {
-            // Put the property settings in ~/.gradle/gradle.properties for
-            // default_deploy_url, default_deploy_grails_plugin_repo
-            // default_deploy_username and default_deploy_password.
-            url "${project.property('default_deploy_url')}/${default_deploy_grails_plugin_repo}"
-            credentials {
-                username project.property("default_deploy_user")
-                password project.property("default_deploy_password")
-            }
-        }
     }
 }

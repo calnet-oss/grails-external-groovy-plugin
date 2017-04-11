@@ -1,0 +1,28 @@
+apply plugin: "org.grails.grails-web"
+
+dependencies {
+    compile "org.springframework.boot:spring-boot-starter-logging"
+    compile "org.springframework.boot:spring-boot-autoconfigure"
+    compile "org.grails:grails-core"
+    compile "org.springframework.boot:spring-boot-starter-tomcat"
+    compile "org.grails:grails-dependencies"
+    compile "org.grails:grails-web-boot"
+    console "org.grails:grails-console"
+    profile "org.grails.profiles:web"
+    testCompile "org.grails:grails-plugin-testing"
+
+    compile project("$externalGroovyRef:external-groovy-plugin")
+}
+
+bootRun {
+    jvmArgs('-Dspring.output.ansi.enabled=always')
+    addResources = true
+}
+
+test {
+    // We'd like memory to be low for the tests so we can trigger GC for
+    // class unloading checking
+    minHeapSize = "64m"
+    maxHeapSize = "92m"
+    jvmArgs "-XX:MaxMetaspaceSize=92m", "-Dgroovy.use.classvalue=true"
+}

@@ -1,0 +1,77 @@
+/**
+ * Copyright (c) 2016, Regents of the University of California and
+ * contributors.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+apply plugin: "org.grails.grails-plugin"
+apply plugin: 'maven-publish'
+
+dependencies {
+    provided "javax.servlet:javax.servlet-api"
+    compileOnly "org.grails:grails-core"
+    compileOnly "org.grails:grails-dependencies"
+    compileOnly "org.grails:grails-plugin-services"
+    profile "org.grails.profiles:plugin"
+}
+
+bootRun {
+    jvmArgs('-Dspring.output.ansi.enabled=always')
+    addResources = true
+}
+// enable if you wish to package this plugin as a standalone application
+bootRepackage.enabled = false
+
+jar {
+    from { ["../LICENSE.txt", "../NOTICE_THIRD_PARTY.txt"] }
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    from { ["../LICENSE.txt", "../NOTICE_THIRD_PARTY.txt"] }
+}
+
+// publishing with './gradlew publish'
+publish.dependsOn assemble
+publishToMavenLocal.dependsOn assemble
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId rootProject.name
+            from components.java
+            artifact sourceJar { classifier "sources" }
+        }
+    }
+    repositories {
+        maven {
+            // Put the property settings in ~/.gradle/gradle.properties for
+            // default_deploy_url, default_deploy_grails_plugin_repo
+            // default_deploy_username and default_deploy_password.
+            url "${project.property('default_deploy_url')}/${default_deploy_grails_plugin_repo}"
+            credentials {
+                username project.property("default_deploy_user")
+                password project.property("default_deploy_password")
+            }
+        }
+    }
+}
