@@ -11,7 +11,7 @@ dependencies {
     profile "org.grails.profiles:web"
     testCompile "org.grails:grails-plugin-testing"
 
-    compile project("$externalGroovyRef:external-groovy-plugin")
+    compile project(externalGroovyDep)
 }
 
 bootRun {
