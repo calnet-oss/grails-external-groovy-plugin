@@ -32,7 +32,7 @@ targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
 dependencies {
-    provided "javax.servlet:javax.servlet-api"
+    compileOnly "javax.servlet:javax.servlet-api"
     compileOnly "org.grails:grails-core"
     compileOnly "org.grails:grails-dependencies"
     compileOnly "org.grails:grails-plugin-services"
