@@ -65,7 +65,7 @@ class ScriptRunnerImpl implements ScriptRunner {
 
     // internally managed
     private Statistics statistics
-    private boolean isDebugEnabled
+    private boolean debugEnabled
     private volatile ScriptClassLoader classLoaderInstance
     private ScriptFileMonitorThread scriptFileMonitorThread
 
@@ -212,6 +212,8 @@ class ScriptRunnerImpl implements ScriptRunner {
      *        "myscript" as the class name.
      */
     Object runScript(String className, Map<String, Object> propertyInjections = null) throws ScriptRunnerException {
+        log.debug("PROFILE: ScriptRunnerImpl.runScript(): START")
+
         /**
          * Starting with Groovy 2.4.5, the groovy.use.classvalue system
          * property MUST be set to true (i.e., add
@@ -219,61 +221,31 @@ class ScriptRunnerImpl implements ScriptRunner {
          * leaking memory (at least, in the context of external-groovy). 
          * See CNR-1276.  This relates to Groovy bug GROOVY-7591.
          */
-        if(System.getProperty("groovy.use.classvalue") != "true") {
+        if (System.getProperty("groovy.use.classvalue") != "true") {
             log.warn("WARNING: The groovy.use.classvalue system property is not set to true.  This will guarantee a memory leak when using external-groovy.")
         }
 
         // instantiate a new ScriptClassLoader for this script
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() getClassLoaderInstance: START")
         ScriptClassLoader scl = getClassLoaderInstance()
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() getClassLoaderInstance: END")
 
         /**
          * Execute the Bootstrap script which should load the script class
          * and return an instance of that script class.
          */
 
-        // A GroovyShell that will provide our script execution environment. 
-        // It utilizes our ScriptClassLoader.
-        GroovyShell shell = new GroovyShell(scl)
-
-        // inject the script class name for the Bootstrap script
-        shell.setProperty("scriptClassName", className)
-
-        GroovyCodeSource bootstrapSource
-        if (bootstrapScriptFile != null) {
-            // load the Bootstrap source
-            bootstrapSource = new GroovyCodeSource(bootstrapScriptFile)
-            // don't let Groovy cache it
-            bootstrapSource.setCachable(false)
-        } else {
-            //
-            // Provide a default Bootstrap script since none was specified.
-            //
-            // It utilizes the ScriptClassLoader to load the class from the
-            // scriptDirectory using the scriptClassName, which we injected
-            // above with our shell.setProperty() call
-            //
-            String defaultBootstrapScriptCode = """
-              try {
-                if(!getClass().classLoader.parent.parent.isScriptClassLoader())
-                  throw new RuntimeException("Not a ScriptClassLoader")
-              } catch(Exception e) {
-                throw new RuntimeException("Not a ScriptClassLoader")
-              }
-              getClass().classLoader.parent.parent.loadClass(scriptClassName).newInstance()
-            """
-            bootstrapSource = new GroovyCodeSource(defaultBootstrapScriptCode, "Bootstrap", scriptDirectory.toURI().toString())
-            bootstrapSource.setCachable(false)
-        }
-
-        // Run the Bootstrap script, which will return an instance of
-        // the actual script class
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() load script class: START")
         GroovyObject scriptInstance
         try {
-            scriptInstance = (GroovyObject) shell.run(bootstrapSource, [] as String[])
-        } catch (Exception e) {
+            scriptInstance = (GroovyObject) scl.loadClass(className).newInstance()
+        }
+        catch (Exception e) {
             throw new ScriptRunnerException(e)
         }
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() load script class: END")
 
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() property injection: START")
         // Inject grailsApplication, if the script has the property declared.
         if (grailsApplication && scriptInstance.hasProperty("grailsApplication")) {
             scriptInstance.setProperty("grailsApplication", grailsApplication)
@@ -292,17 +264,22 @@ class ScriptRunnerImpl implements ScriptRunner {
                 log.warn("External script with class name $className does not have ${entry.key} property declared")
             }
         }
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() property injection: END")
 
         // Run the script instance.  If the script has no class defined in
         // it, then Groovy will implicitly create a Runnable class around
         // the script code.  If the script is a class, that class should
         // provide a run() method, which we execute here.
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() run script instance: START")
         def result
         try {
             result = scriptInstance.run()
         } catch (Exception e) {
             throw new ScriptRunnerException(e)
         }
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() run script instance: END")
+
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() post script cleanup: START")
 
         // Don't want to hang on to any scl class references with the result
         // object.  That's why we turn it to a String.
@@ -327,6 +304,10 @@ class ScriptRunnerImpl implements ScriptRunner {
             GroovySystem.getMetaClassRegistry().removeMetaClass(c)
         }
 
+        log.debug("PROFILE: ScriptRunnerImpl.runScript() post script cleanup: END")
+
+        log.debug("PROFILE: ScriptRunnerImpl.runScript(): END")
+
         return resultString
     }
 
@@ -336,10 +317,10 @@ class ScriptRunnerImpl implements ScriptRunner {
 
     private void checkDebuggingEnabled() {
         try {
-            isDebugEnabled = log.isDebugEnabled()
+            debugEnabled = log.isDebugEnabled()
         }
         catch (Exception e) {
-            isDebugEnabled = false
+            debugEnabled = false
         }
     }
 
