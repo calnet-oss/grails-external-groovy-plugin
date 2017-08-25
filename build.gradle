@@ -57,8 +57,13 @@ buildscript {
     }
 }
 
-project.group = 'edu.berkeley.calnet.grails.plugins'
-project.version = '1.2.0-SNAPSHOT'
+group 'edu.berkeley.calnet.grails.plugins'
+version '1.2.0-SNAPSHOT'
+
+subprojects {
+    version parent.version
+    group parent.group
+}
 
 allprojects {
     apply plugin: "idea"
