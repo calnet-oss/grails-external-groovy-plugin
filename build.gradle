@@ -36,26 +36,6 @@
 // Gradle Multi-Project documentation is here:
 // https://docs.gradle.org/current/userguide/multi_project_builds.html
 //
-buildscript {
-    repositories {
-        mavenLocal()
-        if (project.hasProperty("default_proxy_url")) {
-            maven {
-                url project.property("default_proxy_url")
-                credentials {
-                    username project.property("default_proxy_username")
-                    password project.property("default_proxy_password")
-                }
-            }
-        }
-        jcenter()
-        maven { url "https://repo.grails.org/grails/core" }
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-    }
-}
 
 version projectVersion
 group projectGroup
