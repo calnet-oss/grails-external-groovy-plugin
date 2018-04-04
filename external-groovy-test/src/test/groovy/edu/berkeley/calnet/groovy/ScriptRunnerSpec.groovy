@@ -26,13 +26,10 @@
  */
 package edu.berkeley.calnet.groovy
 
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-@TestMixin(GrailsUnitTestMixin)
 class ScriptRunnerSpec extends Specification {
 
     File scriptDirectory = new File("external-scripts/running")
