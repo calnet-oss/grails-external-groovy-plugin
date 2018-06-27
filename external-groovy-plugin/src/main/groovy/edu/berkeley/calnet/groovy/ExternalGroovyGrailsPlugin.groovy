@@ -1,4 +1,3 @@
-package edu.berkeley.calnet.groovy
 /**
  * Copyright (c) 2016, Regents of the University of California and
  * contributors.
@@ -25,6 +24,8 @@ package edu.berkeley.calnet.groovy
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package edu.berkeley.calnet.groovy
+
 import grails.plugins.Plugin
 import groovy.util.logging.Slf4j
 
@@ -32,7 +33,7 @@ import groovy.util.logging.Slf4j
 class ExternalGroovyGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "3.0 > *"
+    def grailsVersion = "3.3.6 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
             "grails-app/init/**"
