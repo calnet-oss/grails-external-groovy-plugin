@@ -26,10 +26,13 @@
  */
 package edu.berkeley.calnet.groovy
 
+import grails.test.mixin.TestMixin
+import grails.test.mixin.support.GrailsUnitTestMixin
 import spock.lang.Specification
 
 import java.nio.ByteBuffer
 
+@TestMixin(GrailsUnitTestMixin)
 class ScriptClassLoaderSpec extends Specification {
     void "test ScriptClassLoader unloading"() {
         given:

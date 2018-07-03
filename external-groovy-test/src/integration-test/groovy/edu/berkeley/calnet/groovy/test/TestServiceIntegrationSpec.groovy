@@ -26,7 +26,7 @@
  */
 package edu.berkeley.calnet.groovy.test
 
-import grails.testing.mixin.integration.Integration
+import grails.test.mixin.integration.Integration
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Specification
 
