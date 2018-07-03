@@ -26,8 +26,6 @@
  */
 package edu.berkeley.calnet.groovy
 
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore
 import spock.lang.Issue
@@ -35,7 +33,6 @@ import spock.lang.Specification
 
 import java.nio.ByteBuffer
 
-@TestMixin(GrailsUnitTestMixin)
 @Slf4j(value = "LOG")
 class ScriptRunnerUnloadingSpec extends Specification {
 
