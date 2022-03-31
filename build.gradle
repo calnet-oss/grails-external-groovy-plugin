@@ -55,7 +55,7 @@ allprojects {
             }
         }
         else {
-            jcenter()
+            mavenCentral()
         }
         // grails-core
         if (project.hasProperty("grailsCore_proxy_url")) {
